@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function VoteModal({ artwork, open, onClose, onSubmit, previousVote }) {
   const [scores, setScores] = useState(previousVote ? previousVote.scores : {
@@ -14,7 +14,7 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
   const [error, setError] = useState('');
 
   // Reset form when modal opens/closes or previousVote changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (open && previousVote) {
       setScores(previousVote.scores);
       setComment(previousVote.comment || '');
