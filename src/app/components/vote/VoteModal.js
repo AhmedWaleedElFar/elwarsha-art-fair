@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+const PdfImagePreview = dynamic(() => import('../PdfImagePreview'), { ssr: false });
 
 export default function VoteModal({ artwork, open, onClose, onSubmit, previousVote }) {
   const [scores, setScores] = useState(previousVote ? previousVote.scores : {
@@ -58,9 +60,27 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
           ×
         </button>
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Left: Artwork Image */}
+          {/* Left: Artwork Preview (PDF, Google Drive, or Image) */}
           <div className="flex-shrink-0 w-full md:w-1/2 flex items-center justify-center">
-            <img src={artwork.imageUrl} alt={artwork.title} className="rounded max-h-72 object-contain w-full" />
+            {(() => {
+              function isGoogleDriveLink(url) {
+                return url && url.includes('drive.google.com');
+              }
+              function isPdfUrl(url) {
+                return url && url.toLowerCase().endsWith('.pdf');
+              }
+              function isImageUrl(url) {
+                return /\.(jpe?g|png|gif|webp)$/i.test(url);
+              }
+              const url = artwork.imageUrl;
+              if (isGoogleDriveLink(url) || isPdfUrl(url)) {
+                return <PdfImagePreview url={url} width={288} height={288} />;
+              } else if (isImageUrl(url)) {
+                return <img src={url} alt={artwork.title} className="rounded max-h-72 object-contain w-full" />;
+              } else {
+                return <div className="text-gray-400">Unsupported file type</div>;
+              }
+            })()}
           </div>
           {/* Right: Details & Voting */}
           <div className="w-full md:w-1/2">

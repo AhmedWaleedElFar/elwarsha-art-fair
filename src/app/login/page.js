@@ -40,17 +40,8 @@ export default function LoginPage() {
         console.log(result.error);
         setError('Invalid email or password');
       } else {
-        // Fetch session to get role
-        setTimeout(async () => {
-          const res = await fetch('/api/auth/session');
-          const session = await res.json();
-          if (session?.user?.role === 'admin') {
-            router.push('/admin');
-          } else {
-            router.push('/vote');
-          }
-          router.refresh();
-        }, 100);
+        // Use session directly after login
+        await router.replace('/'); // This will trigger useEffect to handle the redirect
       }
     } catch (error) {
       setError('An error occurred during login');

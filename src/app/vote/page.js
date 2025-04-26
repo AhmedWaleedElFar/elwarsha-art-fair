@@ -5,6 +5,69 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import VoteModal from '../components/vote/VoteModal';
 
+function isGoogleDriveLink(url) {
+  return url?.includes('drive.google.com');
+}
+
+function getGoogleDriveFileId(url) {
+  let match = url.match(/\/file\/d\/([^/]+)/);
+  if (match) return match[1];
+  match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (match) return match[1];
+  return null;
+}
+
+function isImageUrl(url) {
+  return /\.(jpe?g|png|gif|webp)$/i.test(url);
+}
+
+function isPdfUrl(url) {
+  return url?.toLowerCase().endsWith('.pdf');
+}
+
+import dynamic from 'next/dynamic';
+const PdfImagePreview = dynamic(() => import('../components/PdfImagePreview'), { ssr: false });
+
+function ArtPreview({ url, title, size = 192 }) {
+  if (isGoogleDriveLink(url)) {
+    const fileId = getGoogleDriveFileId(url);
+    // Guess type by extension in url or fallback to PDF if not image
+    if (isImageUrl(url) && fileId) {
+      const directImgUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+      return (
+        <img
+          src={directImgUrl}
+          alt={title}
+          width={size}
+          height={size}
+          style={{ objectFit: 'contain', borderRadius: 8, background: '#f9f9f9' }}
+          className="object-cover rounded mb-4"
+        />
+      );
+    } else if ((isPdfUrl(url) || fileId)) {
+      // Use PdfImagePreview for Google Drive PDFs
+      return <PdfImagePreview url={url} width={size} height={size} />;
+    }
+  }
+  // Non-Google Drive images or PDFs
+  if (isImageUrl(url)) {
+    return (
+      <img
+        src={url}
+        alt={title}
+        width={size}
+        height={size}
+        style={{ objectFit: 'contain', borderRadius: 8, background: '#f9f9f9' }}
+        className="object-cover rounded mb-4"
+      />
+    );
+  } else if (isPdfUrl(url)) {
+    return <PdfImagePreview url={url} width={size} height={size} />;
+  }
+  // fallback: unsupported type
+  return <div>Unsupported file type</div>;
+}
+
 export default function VotePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -80,7 +143,7 @@ export default function VotePage() {
                   setModalOpen(true);
                 }}
               >
-                <img src={art.imageUrl} alt={art.title} className="w-full h-48 object-cover rounded mb-4" />
+                <ArtPreview url={art.imageUrl} title={art.title} size={192} />
                 <h2 className="text-lg font-semibold mb-1">{art.title}</h2>
                 <p className="text-gray-500 mb-2">{art.artistName}</p>
                 <div className="flex items-center gap-2 mb-2">

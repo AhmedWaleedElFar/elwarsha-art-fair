@@ -1,7 +1,7 @@
 import connectDB from '@/app/lib/db';
 import Artwork from '@/app/lib/models/artwork';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from '../auth/authOptions.js';
 
 export async function GET(req) {
   const session = await getServerSession(authOptions);

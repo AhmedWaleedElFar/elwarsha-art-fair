@@ -1,8 +1,24 @@
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from '../auth/authOptions.js';
 import connectDB from '@/app/lib/db';
 import Vote from '@/app/lib/models/vote';
 import Artwork from '@/app/lib/models/artwork';
+
+export async function GET(req) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user?.category) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  await connectDB();
+  const mine = req.nextUrl.searchParams.get('mine');
+  let votes = [];
+  if (mine === '1') {
+    votes = await Vote.find({ judgeId: session.user.id });
+  } else {
+    votes = await Vote.find();
+  }
+  return Response.json({ votes });
+}
 
 export async function POST(req) {
   const session = await getServerSession(authOptions);

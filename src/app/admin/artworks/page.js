@@ -5,6 +5,126 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import React from "react";
 
+import dynamic from 'next/dynamic';
+const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview'), { ssr: false });
+
+function isGoogleDriveLink(url) {
+  return /drive\.google\.com\/file\/d\//.test(url) || /drive\.google\.com\/open\?id=/.test(url);
+}
+function isPdfUrl(url) {
+  return url?.toLowerCase().endsWith('.pdf');
+}
+
+function ArtPreview({ url, title, size = 64 }) {
+  if (isGoogleDriveLink(url) || isPdfUrl(url)) {
+    return (
+      <PdfImagePreview url={url} width={size} height={size} />
+    );
+  }
+  return (
+    <img
+      src={url}
+      alt={title}
+      width={size}
+      height={size}
+      style={{ objectFit: 'cover', borderRadius: 8, background: '#f9f9f9' }}
+      className="object-cover rounded"
+    />
+  );
+}
+
+function BulkCSVUpload({ fetchArtworks }) {
+  const [csvFile, setCsvFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [results, setResults] = useState(null);
+  const [error, setError] = useState("");
+
+  const handleFileChange = (e) => {
+    setCsvFile(e.target.files[0]);
+    setResults(null);
+    setError("");
+  };
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    setUploading(true);
+    setResults(null);
+    setError("");
+    try {
+      const formData = new FormData();
+      formData.append("csv", csvFile);
+      const res = await fetch("/api/artworks/bulk-upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Bulk upload failed");
+      setResults(data.results);
+      if (fetchArtworks) fetchArtworks();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="mb-8 p-4 bg-white dark:bg-gray-800 rounded shadow">
+      <h2 className="text-lg font-semibold mb-2">Bulk Add Artworks via CSV</h2>
+      <form onSubmit={handleUpload} className="flex flex-col gap-2">
+        <div className="mb-2">
+          <label htmlFor="csv-upload" className="inline-block bg-purple-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-purple-700">
+            {csvFile ? "Change CSV File" : "Choose CSV File"}
+          </label>
+          <input
+            id="csv-upload"
+            type="file"
+            accept=".csv"
+            onChange={handleFileChange}
+            required
+            className="hidden"
+          />
+          {csvFile && <span className="ml-3 text-gray-700">{csvFile.name}</span>}
+        </div>
+        <button
+          type="submit"
+          disabled={!csvFile || uploading}
+          className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:opacity-60"
+        >
+          {uploading ? "Uploading..." : "Upload CSV"}
+        </button>
+      </form>
+      {error && <div className="text-red-500 mt-2">{error}</div>}
+      {results && (
+        <div className="mt-4">
+          <h3 className="font-semibold mb-1">Upload Results:</h3>
+          <table className="min-w-full bg-gray-50 rounded">
+            <thead>
+              <tr>
+                <th className="px-2 py-1">Artwork Code</th>
+                <th className="px-2 py-1">Status</th>
+                <th className="px-2 py-1">Error</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((r, i) => (
+                <tr key={i}>
+                  <td className="px-2 py-1">{r.artworkCode}</td>
+                  <td className="px-2 py-1">{r.success ? "✅ Success" : "❌ Failed"}</td>
+                  <td className="px-2 py-1 text-red-600">{r.error || ""}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div className="text-xs text-gray-500 mt-2">
+        CSV columns: title, description, category, artistName, artworkCode, imageUrl, orderWithinCategory
+      </div>
+    </div>
+  );
+}
+
 const CATEGORIES = [
   "Photography",
   "Paintings",
@@ -137,41 +257,44 @@ export default function ManageArtworksPage() {
         </button>
       </div>
       {showAdd ? (
-        <form onSubmit={handleAdd} className="mb-8 space-y-4 p-4 bg-white dark:bg-gray-800 rounded shadow">
-          <div>
-            <label className="block mb-1 font-medium">Title</label>
-            <input type="text" className="w-full p-2 border rounded" value={form.title} required onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Description</label>
-            <textarea className="w-full p-2 border rounded" value={form.description} required onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Category</label>
-            <select className="w-full p-2 border rounded" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
-              {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Artist Name</label>
-            <input type="text" className="w-full p-2 border rounded" value={form.artistName} required onChange={e => setForm(f => ({ ...f, artistName: e.target.value }))} />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Artwork Code</label>
-            <input type="text" className="w-full p-2 border rounded" value={form.artworkCode} required onChange={e => setForm(f => ({ ...f, artworkCode: e.target.value }))} />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Image URL</label>
-            <input type="text" className="w-full p-2 border rounded" value={form.imageUrl} required onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))} />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Order Within Category</label>
-            <input type="number" className="w-full p-2 border rounded" value={form.orderWithinCategory} min={0} required onChange={e => setForm(f => ({ ...f, orderWithinCategory: Number(e.target.value) }))} />
-          </div>
-          {error && <div className="text-red-500">{error}</div>}
-          {success && <div className="text-green-600">{success}</div>}
-          <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Add Artwork</button>
-        </form>
+        <div>
+          <form onSubmit={handleAdd} className="mb-8 space-y-4 p-4 bg-white dark:bg-gray-800 rounded shadow">
+            <div>
+              <label className="block mb-1 font-medium">Title</label>
+              <input type="text" className="w-full p-2 border rounded" value={form.title} required onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Description</label>
+              <textarea className="w-full p-2 border rounded" value={form.description} required onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Category</label>
+              <select className="w-full p-2 border rounded" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
+                {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Artist Name</label>
+              <input type="text" className="w-full p-2 border rounded" value={form.artistName} required onChange={e => setForm(f => ({ ...f, artistName: e.target.value }))} />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Artwork Code</label>
+              <input type="text" className="w-full p-2 border rounded" value={form.artworkCode} required onChange={e => setForm(f => ({ ...f, artworkCode: e.target.value }))} />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Image URL</label>
+              <input type="text" className="w-full p-2 border rounded" value={form.imageUrl} required onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))} />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Order Within Category</label>
+              <input type="number" className="w-full p-2 border rounded" value={form.orderWithinCategory} min={0} required onChange={e => setForm(f => ({ ...f, orderWithinCategory: Number(e.target.value) }))} />
+            </div>
+            {error && <div className="text-red-500">{error}</div>}
+            {success && <div className="text-green-600">{success}</div>}
+            <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Add Artwork</button>
+          </form>
+          <BulkCSVUpload fetchArtworks={fetchArtworks} />
+        </div>
       ) : (
         <div>
           <div className="flex gap-4 mb-4">
@@ -232,7 +355,9 @@ export default function ManageArtworksPage() {
                                 onClick={() => swapOrder(a, arr[idx + 1])}
                               >↓</button>
                             </td>
-                            <td className="px-3 py-2"><img src={a.imageUrl} alt={a.title} className="w-16 h-16 object-cover rounded" /></td>
+                            <td className="px-3 py-2">
+  <ArtPreview url={a.imageUrl} title={a.title} size={64} />
+</td>
                             <td className="px-3 py-2">-</td>
                           </tr>
                         );
