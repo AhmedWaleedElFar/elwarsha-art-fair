@@ -31,6 +31,7 @@ export default function ManageArtworksPage() {
   const [filterArtist, setFilterArtist] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [editedOrders, setEditedOrders] = useState({}); // { artworkId: newOrder }
 
   useEffect(() => {
     if (status === "loading") return;
@@ -69,35 +70,8 @@ export default function ManageArtworksPage() {
     }
   }
 
-  async function handleOrderChange(id, newOrder) {
-    // Find the artwork and its category
-    const artwork = artworks.find(a => a._id === id);
-    if (!artwork) return;
-    const cat = artwork.category;
-    const sameCat = artworks.filter(a => a.category === cat).sort((a, b) => a.orderWithinCategory - b.orderWithinCategory);
-    // Clamp newOrder between 0 and max
-    const minOrder = 0;
-    const maxOrder = sameCat.length - 1;
-    let targetOrder = Math.max(minOrder, Math.min(maxOrder, newOrder));
-    if (artwork.orderWithinCategory === targetOrder) return;
-    // Shift others
-    let reordered = sameCat.map(a => ({ ...a }));
-    const movingIdx = reordered.findIndex(a => a._id === id);
-    const moving = reordered.splice(movingIdx, 1)[0];
-    reordered.splice(targetOrder, 0, moving);
-    // Reassign orderWithinCategory
-    reordered = reordered.map((a, i) => ({ ...a, orderWithinCategory: i }));
-    // Update all in backend
-    await Promise.all(
-      reordered.map(a =>
-        fetch(`/api/artworks/${a._id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderWithinCategory: a.orderWithinCategory }),
-        })
-      )
-    );
-    fetchArtworks();
+  function handleOrderChange(id, newOrder) {
+    setEditedOrders(prev => ({ ...prev, [id]: newOrder }));
   }
 
   // Group and sort artworks by category and orderWithinCategory
@@ -123,6 +97,26 @@ export default function ManageArtworksPage() {
       })
     ]);
     fetchArtworks();
+  }
+
+  async function handleSaveOrders() {
+    setError("");
+    setSuccess("");
+    try {
+      const updates = Object.entries(editedOrders).map(([id, newOrder]) =>
+        fetch(`/api/artworks/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderWithinCategory: newOrder }),
+        })
+      );
+      await Promise.all(updates);
+      setEditedOrders({});
+      setSuccess("Order updated successfully!");
+      fetchArtworks();
+    } catch (err) {
+      setError("Failed to update order.");
+    }
   }
 
   return (
@@ -209,43 +203,56 @@ export default function ManageArtworksPage() {
                           <td colSpan={7} className="font-bold py-2">{cat}</td>
                         </tr>
                       )}
-                      {groupedArtworks[cat].map((a, idx, arr) => (
-                        <tr key={a._id} className="border-t border-gray-200 dark:border-gray-700">
-                          <td className="px-3 py-2">{a.title}</td>
-                          <td className="px-3 py-2">{a.category}</td>
-                          <td className="px-3 py-2">{a.artistName}</td>
-                          <td className="px-3 py-2">{a.artworkCode}</td>
-                          <td className="px-3 py-2">
-                            <input
-                              type="number"
-                              className="w-16 border rounded mr-2"
-                              value={a.orderWithinCategory}
-                              min={0}
-                              onChange={e => handleOrderChange(a._id, Number(e.target.value))}
-                            />
-                            <button
-                              className="px-2 text-lg font-bold text-gray-600 hover:text-purple-700"
-                              disabled={idx === 0}
-                              title="Move Up"
-                              onClick={() => swapOrder(a, arr[idx - 1])}
-                            >↑</button>
-                            <button
-                              className="px-2 text-lg font-bold text-gray-600 hover:text-purple-700"
-                              disabled={idx === arr.length - 1}
-                              title="Move Down"
-                              onClick={() => swapOrder(a, arr[idx + 1])}
-                            >↓</button>
-                          </td>
-                          <td className="px-3 py-2"><img src={a.imageUrl} alt={a.title} className="w-16 h-16 object-cover rounded" /></td>
-                          <td className="px-3 py-2">-</td>
-                        </tr>
-                      ))}
+                      {groupedArtworks[cat].map((a, idx, arr) => {
+                        const editedValue = editedOrders[a._id];
+                        return (
+                          <tr key={a._id} className="border-t border-gray-200 dark:border-gray-700">
+                            <td className="px-3 py-2">{a.title}</td>
+                            <td className="px-3 py-2">{a.category}</td>
+                            <td className="px-3 py-2">{a.artistName}</td>
+                            <td className="px-3 py-2">{a.artworkCode}</td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="number"
+                                className={`w-16 border rounded mr-2 ${editedValue !== undefined && editedValue !== a.orderWithinCategory ? 'border-yellow-500' : ''}`}
+                                value={editedValue !== undefined ? editedValue : a.orderWithinCategory}
+                                min={0}
+                                onChange={e => handleOrderChange(a._id, Number(e.target.value))}
+                              />
+                              <button
+                                className="px-2 text-lg font-bold text-gray-600 hover:text-purple-700"
+                                disabled={idx === 0}
+                                title="Move Up"
+                                onClick={() => swapOrder(a, arr[idx - 1])}
+                              >↑</button>
+                              <button
+                                className="px-2 text-lg font-bold text-gray-600 hover:text-purple-700"
+                                disabled={idx === arr.length - 1}
+                                title="Move Down"
+                                onClick={() => swapOrder(a, arr[idx + 1])}
+                              >↓</button>
+                            </td>
+                            <td className="px-3 py-2"><img src={a.imageUrl} alt={a.title} className="w-16 h-16 object-cover rounded" /></td>
+                            <td className="px-3 py-2">-</td>
+                          </tr>
+                        );
+                      })}
                     </React.Fragment>
                   );
                 })}
               </tbody>
             </table>
           </div>
+          {Object.keys(editedOrders).length > 0 && (
+            <div className="mt-4 flex justify-end">
+              <button
+                className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-semibold"
+                onClick={handleSaveOrders}
+              >
+                Save
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
