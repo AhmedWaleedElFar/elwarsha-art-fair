@@ -1,13 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (session?.user?.role === 'admin') {
+      router.replace('/admin');
+    } else if (session?.user?.role === 'judge' && session?.user?.category) {
+      router.replace('/vote');
+    }
+  }, [session, status, router]);
 
   async function handleSubmit(e) {
     e.preventDefault();

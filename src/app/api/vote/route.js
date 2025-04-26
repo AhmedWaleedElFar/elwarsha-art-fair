@@ -19,20 +19,25 @@ export async function POST(req) {
     return Response.json({ error: 'Artwork not found' }, { status: 404 });
   }
 
-  // Prevent duplicate vote
-  const existing = await Vote.findOne({ judgeId: session.user.id, artworkId });
-  if (existing) {
-    return Response.json({ error: 'You have already voted for this artwork.' }, { status: 400 });
+  // Upsert vote: if exists, update; else, create
+  let vote = await Vote.findOneAndUpdate(
+    { judgeId: session.user.id, artworkId },
+    {
+      scores,
+      comment,
+      category: artwork.category,
+    },
+    { new: true }
+  );
+  if (!vote) {
+    vote = await Vote.create({
+      judgeId: session.user.id,
+      artworkId,
+      scores,
+      comment,
+      category: artwork.category,
+    });
   }
-
-  // Save vote
-  const vote = await Vote.create({
-    judgeId: session.user.id,
-    artworkId,
-    scores,
-    comment,
-    category: artwork.category,
-  });
 
   return Response.json({ success: true, vote });
 }

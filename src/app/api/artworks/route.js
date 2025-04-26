@@ -5,13 +5,33 @@ import { authOptions } from '../auth/[...nextauth]/route';
 
 export async function GET(req) {
   const session = await getServerSession(authOptions);
-  // Only allow access if user is a judge (i.e., has a category)
-  if (!session || !session.user?.category) {
+  await connectDB();
+  let artworks = [];
+  if (!session) {
     return Response.json({ artworks: [] });
   }
-  await connectDB();
-  // Only show artworks from the judge's category
-  const judgeCategory = session.user.category;
-  const artworks = await Artwork.find({ category: judgeCategory }).sort({ createdAt: -1 });
+  if (session.user.role === 'admin') {
+    artworks = await Artwork.find({}).sort({ category: 1, orderWithinCategory: 1 });
+  } else if (session.user.category) {
+    artworks = await Artwork.find({ category: session.user.category }).sort({ orderWithinCategory: 1 });
+  }
   return Response.json({ artworks });
+}
+
+export async function POST(req) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== 'admin') {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  await connectDB();
+  const { title, description, category, artistName, artworkCode, imageUrl, orderWithinCategory } = await req.json();
+  if (!title || !description || !category || !artistName || !artworkCode || !imageUrl) {
+    return Response.json({ error: 'All fields are required' }, { status: 400 });
+  }
+  const exists = await Artwork.findOne({ artworkCode });
+  if (exists) {
+    return Response.json({ error: 'Artwork code must be unique' }, { status: 400 });
+  }
+  const artwork = await Artwork.create({ title, description, category, artistName, artworkCode, imageUrl, orderWithinCategory });
+  return Response.json({ artwork });
 }

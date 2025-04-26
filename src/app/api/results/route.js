@@ -26,6 +26,14 @@ export async function GET() {
           ]
         } },
         totalVotes: { $sum: 1 },
+        totalScore: { $sum: {
+          $add: [
+            '$scores.creativity',
+            '$scores.technique',
+            '$scores.artisticVision',
+            '$scores.overallImpact',
+          ]
+        } },
         category: { $first: '$category' },
       }
     },
@@ -43,6 +51,7 @@ export async function GET() {
         _id: 1,
         avgScore: 1,
         totalVotes: 1,
+        totalScore: 1,
         category: 1,
         title: '$artwork.title',
         artistName: '$artwork.artistName',

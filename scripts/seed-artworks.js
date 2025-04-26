@@ -12,6 +12,7 @@ const artworkSchema = new mongoose.Schema({
   artistName: String,
   artworkCode: String,
   imageUrl: String,
+  orderWithinCategory: Number,
 });
 
 const Artwork = mongoose.models.Artwork || mongoose.model('Artwork', artworkSchema);
@@ -27,6 +28,7 @@ async function seed() {
       artistName: 'Alice Smith',
       artworkCode: 'PHO-001',
       imageUrl: 'https://picsum.photos/id/1015/400/300',
+      orderWithinCategory: 1,
     },
     {
       title: 'Forest Dreams',
@@ -35,6 +37,7 @@ async function seed() {
       artistName: 'Bob Lee',
       artworkCode: 'PAI-002',
       imageUrl: 'https://picsum.photos/id/1025/400/300',
+      orderWithinCategory: 1,
     },
     {
       title: 'Digital Mirage',
@@ -43,6 +46,7 @@ async function seed() {
       artistName: 'Clara Zhang',
       artworkCode: 'DIG-003',
       imageUrl: 'https://picsum.photos/id/1035/400/300',
+      orderWithinCategory: 1,
     },
     {
       title: 'The Thinker',
@@ -51,6 +55,7 @@ async function seed() {
       artistName: 'David Kim',
       artworkCode: 'DRA-004',
       imageUrl: 'https://picsum.photos/id/1045/400/300',
+      orderWithinCategory: 1,
     },
     {
       title: 'Urban Reflections',
@@ -59,6 +64,7 @@ async function seed() {
       artistName: 'Elena Rossi',
       artworkCode: 'PHO-005',
       imageUrl: 'https://picsum.photos/id/1055/400/300',
+      orderWithinCategory: 2,
     },
     {
       title: 'Colorful Chaos',
@@ -67,6 +73,7 @@ async function seed() {
       artistName: 'Faisal Ahmed',
       artworkCode: 'PAI-006',
       imageUrl: 'https://picsum.photos/id/1065/400/300',
+      orderWithinCategory: 2,
     },
   ];
 

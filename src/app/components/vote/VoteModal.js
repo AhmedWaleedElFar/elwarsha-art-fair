@@ -2,16 +2,32 @@
 
 import { useState } from 'react';
 
-export default function VoteModal({ artwork, open, onClose, onSubmit }) {
-  const [scores, setScores] = useState({
+export default function VoteModal({ artwork, open, onClose, onSubmit, previousVote }) {
+  const [scores, setScores] = useState(previousVote ? previousVote.scores : {
     creativity: 3,
     technique: 3,
     artisticVision: 3,
     overallImpact: 3,
   });
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState(previousVote ? previousVote.comment : '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // Reset form when modal opens/closes or previousVote changes
+  React.useEffect(() => {
+    if (open && previousVote) {
+      setScores(previousVote.scores);
+      setComment(previousVote.comment || '');
+    } else if (open) {
+      setScores({
+        creativity: 3,
+        technique: 3,
+        artisticVision: 3,
+        overallImpact: 3,
+      });
+      setComment('');
+    }
+  }, [open, previousVote]);
 
   if (!open || !artwork) return null;
 

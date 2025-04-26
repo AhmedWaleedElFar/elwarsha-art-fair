@@ -30,6 +30,11 @@ const artworkSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  orderWithinCategory: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

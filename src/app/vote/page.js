@@ -9,6 +9,7 @@ export default function VotePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [artworks, setArtworks] = useState([]);
+  const [votes, setVotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedArtwork, setSelectedArtwork] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -21,14 +22,19 @@ export default function VotePage() {
   }, [session, status, router]);
 
   useEffect(() => {
-    async function fetchArtworks() {
+    async function fetchArtworksAndVotes() {
       setLoading(true);
-      const res = await fetch('/api/artworks');
-      const data = await res.json();
-      setArtworks(data.artworks || []);
+      const [artRes, voteRes] = await Promise.all([
+        fetch('/api/artworks'),
+        fetch('/api/vote?mine=1'),
+      ]);
+      const artData = await artRes.json();
+      const voteData = await voteRes.json();
+      setArtworks(artData.artworks || []);
+      setVotes(voteData.votes || []);
       setLoading(false);
     }
-    fetchArtworks();
+    fetchArtworksAndVotes();
   }, []);
 
   return (
@@ -65,6 +71,7 @@ export default function VotePage() {
       <VoteModal
         artwork={selectedArtwork}
         open={modalOpen}
+        previousVote={selectedArtwork && votes.find(v => v.artworkId === selectedArtwork._id)}
         onClose={() => setModalOpen(false)}
         onSubmit={async (voteData) => {
           if (!selectedArtwork) return;
@@ -80,6 +87,17 @@ export default function VotePage() {
             });
             const result = await res.json();
             if (!res.ok) throw new Error(result.error || 'Failed to submit vote');
+            setVotes(votes => {
+              const idx = votes.findIndex(v => v.artworkId === selectedArtwork._id);
+              const newVote = result.vote;
+              if (idx !== -1) {
+                const updated = [...votes];
+                updated[idx] = newVote;
+                return updated;
+              } else {
+                return [...votes, newVote];
+              }
+            });
             setModalOpen(false);
             alert('Vote submitted!');
           } catch (err) {

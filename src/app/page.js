@@ -13,10 +13,10 @@ export default function Home() {
             Welcome to the Digital Art Exhibition & Competition
           </p>
           <Link 
-            href="/vote"
+            href="/login"
             className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 md:py-4 md:text-lg md:px-10"
           >
-            Start Voting
+            Sign In
           </Link>
         </div>
 
