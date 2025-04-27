@@ -2,11 +2,18 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import React from "react";
+import { Fragment, useEffect, useState, memo, useMemo } from "react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
 
-import dynamic from 'next/dynamic';
 const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview'), { ssr: false });
+
+const CATEGORIES = [
+  "Photography",
+  "Paintings",
+  "Digital Painting",
+  "Drawing",
+];
 
 function isGoogleDriveLink(url) {
   return /drive\.google\.com\/file\/d\//.test(url) || /drive\.google\.com\/open\?id=/.test(url);
@@ -15,25 +22,24 @@ function isPdfUrl(url) {
   return url?.toLowerCase().endsWith('.pdf');
 }
 
-function ArtPreview({ url, title, size = 64 }) {
+const ArtPreview = memo(function ArtPreview({ url, title, size = 64 }) {
   if (isGoogleDriveLink(url) || isPdfUrl(url)) {
-    return (
-      <PdfImagePreview url={url} width={size} height={size} />
-    );
+    return <PdfImagePreview url={url} width={size} height={size} />;
   }
   return (
-    <img
+    <Image
       src={url}
       alt={title}
       width={size}
       height={size}
-      style={{ objectFit: 'cover', borderRadius: 8, background: '#f9f9f9' }}
+      style={{ objectFit: "cover", borderRadius: 8, background: "#f9f9f9" }}
       className="object-cover rounded"
+      loading="lazy"
     />
   );
-}
+});
 
-function BulkCSVUpload({ fetchArtworks }) {
+const BulkCSVUpload = memo(function BulkCSVUpload({ fetchArtworks }) {
   const [csvFile, setCsvFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [results, setResults] = useState(null);
@@ -123,14 +129,7 @@ function BulkCSVUpload({ fetchArtworks }) {
       </div>
     </div>
   );
-}
-
-const CATEGORIES = [
-  "Photography",
-  "Paintings",
-  "Digital Painting",
-  "Drawing",
-];
+});
 
 export default function ManageArtworksPage() {
   const { data: session, status } = useSession();
@@ -151,7 +150,21 @@ export default function ManageArtworksPage() {
   const [filterArtist, setFilterArtist] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [editedOrders, setEditedOrders] = useState({}); // { artworkId: newOrder }
+  const [editedOrders, setEditedOrders] = useState({});
+
+  const groupedArtworks = useMemo(() => {
+    const groups = {};
+    CATEGORIES.forEach(cat => {
+      groups[cat] = artworks
+        .filter(a =>
+          (!filterCategory || a.category === filterCategory) &&
+          (!filterArtist || a.artistName.toLowerCase().includes(filterArtist.toLowerCase())) &&
+          a.category === cat
+        )
+        .sort((a, b) => a.orderWithinCategory - b.orderWithinCategory);
+    });
+    return groups;
+  }, [artworks, filterCategory, filterArtist]);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -194,16 +207,7 @@ export default function ManageArtworksPage() {
     setEditedOrders(prev => ({ ...prev, [id]: newOrder }));
   }
 
-  // Group and sort artworks by category and orderWithinCategory
-  const groupedArtworks = CATEGORIES.reduce((acc, cat) => {
-    acc[cat] = artworks
-      .filter(a => (!filterCategory || a.category === filterCategory) && (!filterArtist || a.artistName.toLowerCase().includes(filterArtist.toLowerCase())) && a.category === cat)
-      .sort((a, b) => a.orderWithinCategory - b.orderWithinCategory);
-    return acc;
-  }, {});
-
   async function swapOrder(a, b) {
-    // Swap orderWithinCategory between a and b
     await Promise.all([
       fetch(`/api/artworks/${a._id}`, {
         method: "PATCH",
@@ -293,17 +297,10 @@ export default function ManageArtworksPage() {
             {success && <div className="text-green-600">{success}</div>}
             <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Add Artwork</button>
           </form>
-          <BulkCSVUpload fetchArtworks={fetchArtworks} />
         </div>
       ) : (
         <div>
-          <div className="flex gap-4 mb-4">
-            <select className="border rounded p-2" value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
-              <option value="">All Categories</option>
-              {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-            </select>
-            <input type="text" className="border rounded p-2" placeholder="Filter by artist name..." value={filterArtist} onChange={e => setFilterArtist(e.target.value)} />
-          </div>
+          <BulkCSVUpload fetchArtworks={fetchArtworks} />
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white dark:bg-gray-800 rounded shadow">
               <thead>
@@ -318,59 +315,69 @@ export default function ManageArtworksPage() {
                 </tr>
               </thead>
               <tbody>
-                {CATEGORIES.filter(cat => !filterCategory || cat === filterCategory).map(cat => {
-                  return (
-                    <React.Fragment key={cat}>
+                {loading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="px-3 py-2"><div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded" /></td>
+                      <td className="px-3 py-2"><div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded" /></td>
+                      <td className="px-3 py-2"><div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded" /></td>
+                      <td className="px-3 py-2"><div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded" /></td>
+                      <td className="px-3 py-2"><div className="w-12 h-4 bg-gray-200 dark:bg-gray-700 rounded" /></td>
+                      <td className="px-3 py-2"><div className="w-16 h-8 bg-gray-200 dark:bg-gray-700 rounded" /></td>
+                      <td className="px-3 py-2"><div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded" /></td>
+                    </tr>
+                  ))
+                ) : (
+                  CATEGORIES.filter(cat => !filterCategory || cat === filterCategory).map(cat => (
+                    <Fragment key={cat}>
                       {groupedArtworks[cat].length > 0 && (
                         <tr key={cat + "-header"} className="bg-gray-100 dark:bg-gray-700">
                           <td colSpan={7} className="font-bold py-2">{cat}</td>
                         </tr>
                       )}
-                      {groupedArtworks[cat].map((a, idx, arr) => {
-                        const editedValue = editedOrders[a._id];
-                        return (
-                          <tr key={a._id} className="border-t border-gray-200 dark:border-gray-700">
-                            <td className="px-3 py-2">{a.title}</td>
-                            <td className="px-3 py-2">{a.category}</td>
-                            <td className="px-3 py-2">{a.artistName}</td>
-                            <td className="px-3 py-2">{a.artworkCode}</td>
-                            <td className="px-3 py-2">
-                              <input
-                                type="number"
-                                className={`w-16 border rounded mr-2 ${editedValue !== undefined && editedValue !== a.orderWithinCategory ? 'border-yellow-500' : ''}`}
-                                value={editedValue !== undefined ? editedValue : a.orderWithinCategory}
-                                min={0}
-                                onChange={e => handleOrderChange(a._id, Number(e.target.value))}
-                              />
-                              <button
-                                className="px-2 text-lg font-bold text-gray-600 hover:text-purple-700"
-                                disabled={idx === 0}
-                                title="Move Up"
-                                onClick={() => swapOrder(a, arr[idx - 1])}
-                              >↑</button>
-                              <button
-                                className="px-2 text-lg font-bold text-gray-600 hover:text-purple-700"
-                                disabled={idx === arr.length - 1}
-                                title="Move Down"
-                                onClick={() => swapOrder(a, arr[idx + 1])}
-                              >↓</button>
-                            </td>
-                            <td className="px-3 py-2">
-  <ArtPreview url={a.imageUrl} title={a.title} size={64} />
-</td>
-                            <td className="px-3 py-2">-</td>
-                          </tr>
-                        );
-                      })}
-                    </React.Fragment>
-                  );
-                })}
+                      {groupedArtworks[cat].map((a, idx, arr) => (
+                        <tr key={a._id} className="border-t border-gray-200 dark:border-gray-700">
+                          <td className="px-3 py-2">{a.title}</td>
+                          <td className="px-3 py-2">{a.category}</td>
+                          <td className="px-3 py-2">{a.artistName}</td>
+                          <td className="px-3 py-2">{a.artworkCode}</td>
+                          <td className="px-3 py-2">
+                            <input
+                              type="number"
+                              className={`w-16 border rounded mr-2 ${editedOrders[a._id] !== undefined && editedOrders[a._id] !== a.orderWithinCategory ? 'border-yellow-500' : ''}`}
+                              value={editedOrders[a._id] !== undefined ? editedOrders[a._id] : a.orderWithinCategory}
+                              min={0}
+                              onChange={e => handleOrderChange(a._id, Number(e.target.value))}
+                            />
+                            <button
+                              className="px-2 text-lg font-bold text-gray-600 hover:text-purple-700"
+                              disabled={idx === 0}
+                              title="Move Up"
+                              onClick={() => swapOrder(a, arr[idx - 1])}
+                            >↑</button>
+                            <button
+                              className="px-2 text-lg font-bold text-gray-600 hover:text-purple-700"
+                              disabled={idx === arr.length - 1}
+                              title="Move Down"
+                              onClick={() => swapOrder(a, arr[idx + 1])}
+                            >↓</button>
+                          </td>
+                          <td className="px-3 py-2">
+                            <ArtPreview url={a.imageUrl} title={a.title} size={64} />
+                          </td>
+                          <td className="px-3 py-2">-</td>
+                        </tr>
+                      ))}
+                    </Fragment>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
           {Object.keys(editedOrders).length > 0 && (
             <div className="mt-4 flex justify-end">
               <button
+                type="button"
                 className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-semibold"
                 onClick={handleSaveOrders}
               >

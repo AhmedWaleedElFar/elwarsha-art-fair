@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import VoteModal from '../components/vote/VoteModal';
 
 function isGoogleDriveLink(url) {
@@ -18,7 +18,7 @@ function getGoogleDriveFileId(url) {
 }
 
 function isImageUrl(url) {
-  return /\.(jpe?g|png|gif|webp)$/i.test(url);
+  return /\.(jpe?g|png|gif|webp)$/i.test(url) || url?.startsWith('https://picsum.photos/');
 }
 
 function isPdfUrl(url) {
@@ -28,20 +28,22 @@ function isPdfUrl(url) {
 import dynamic from 'next/dynamic';
 const PdfImagePreview = dynamic(() => import('../components/PdfImagePreview'), { ssr: false });
 
-function ArtPreview({ url, title, size = 192 }) {
+import Image from 'next/image';
+const ArtPreview = memo(function ArtPreview({ url, title, size = 192 }) {
   if (isGoogleDriveLink(url)) {
     const fileId = getGoogleDriveFileId(url);
     // Guess type by extension in url or fallback to PDF if not image
     if (isImageUrl(url) && fileId) {
       const directImgUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
       return (
-        <img
+        <Image
           src={directImgUrl}
           alt={title}
           width={size}
           height={size}
           style={{ objectFit: 'contain', borderRadius: 8, background: '#f9f9f9' }}
           className="object-cover rounded mb-4"
+          loading="lazy"
         />
       );
     } else if ((isPdfUrl(url) || fileId)) {
@@ -52,21 +54,22 @@ function ArtPreview({ url, title, size = 192 }) {
   // Non-Google Drive images or PDFs
   if (isImageUrl(url)) {
     return (
-      <img
+      <Image
         src={url}
         alt={title}
         width={size}
         height={size}
         style={{ objectFit: 'contain', borderRadius: 8, background: '#f9f9f9' }}
         className="object-cover rounded mb-4"
+        loading="lazy"
       />
     );
   } else if (isPdfUrl(url)) {
     return <PdfImagePreview url={url} width={size} height={size} />;
   }
   // fallback: unsupported type
-  return <div>Unsupported file type</div>;
-}
+  return <div>Unsupported file type {isPdfUrl(url)} {isImageUrl(url)}</div>;
+});
 
 export default function VotePage() {
   const { data: session, status } = useSession();
@@ -77,12 +80,22 @@ export default function VotePage() {
   const [selectedArtwork, setSelectedArtwork] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
+  const [selectedCategory, setSelectedCategory] = useState('');
+
   useEffect(() => {
     if (status === 'loading') return;
-    if (!session || !session.user?.category) {
+    if (!session || !session.user?.categories || session.user.categories.length === 0) {
       router.replace('/login');
+    } else {
+      // Always redirect to /vote if judge is logged in and not already there
+      if (typeof window !== 'undefined' && window.location.pathname !== '/vote') {
+        router.replace('/vote');
+      }
+      if (!selectedCategory) {
+        setSelectedCategory(session.user.categories[0]);
+      }
     }
-  }, [session, status, router]);
+  }, [session, status, router, selectedCategory]);
 
   useEffect(() => {
     async function fetchArtworksAndVotes() {
@@ -126,39 +139,60 @@ export default function VotePage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-center">Vote for Artworks</h1>
 
+      {/* Category Selector for Judges with Multiple Categories */}
+      {session && session.user?.categories && session.user.categories.length > 1 && (
+        <div className="mb-6 flex justify-center">
+          <label className="mr-2 font-semibold">Category:</label>
+          <select
+            className="p-2 border rounded"
+            value={selectedCategory}
+            onChange={e => setSelectedCategory(e.target.value)}
+          >
+            {session.user.categories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+      )}
       {/* Gallery */}
       {loading ? (
-        <div className="text-center py-10 text-lg">Loading artworks...</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col items-center animate-pulse">
+              <div className="w-48 h-48 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
+              <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+              <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-1" />
+              <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+              <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded mt-auto" />
+            </div>
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {artworks.length === 0 ? (
+          {artworks.filter(a => a.category === selectedCategory).length === 0 ? (
             <div className="col-span-full text-center text-gray-500">No artworks found.</div>
           ) : (
-            artworks.map((art) => (
-              <div
-                key={art._id}
-                className="bg-white dark:bg-gray-800 rounded shadow p-4 flex flex-col items-center cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => {
-                  setSelectedArtwork(art);
-                  setModalOpen(true);
-                }}
-              >
-                <ArtPreview url={art.imageUrl} title={art.title} size={192} />
-                <h2 className="text-lg font-semibold mb-1">{art.title}</h2>
-                <p className="text-gray-500 mb-2">{art.artistName}</p>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-200 px-2 py-1 rounded">{art.category}</span>
-                  {votes.some(v => v.artworkId === art._id) && (
-                    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded font-semibold border border-green-300">Voted</span>
-                  )}
-                </div>
-                <button className="mt-2 px-4 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700">Vote</button>
-                {votes.some(v => v.artworkId === art._id) && (
+            artworks.filter(a => a.category === selectedCategory).map(artwork => (
+              <div key={artwork._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col items-center">
+                <ArtPreview url={artwork.imageUrl} title={artwork.title} />
+                <h2 className="text-lg font-bold mt-2 mb-1 text-center">{artwork.title}</h2>
+                <div className="text-gray-600 dark:text-gray-300 text-sm mb-1">By {artwork.artistName}</div>
+                <div className="text-gray-400 text-xs mb-2">Category: {artwork.category}</div>
+                <button
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mt-auto"
+                  onClick={() => {
+                    setSelectedArtwork(artwork);
+                    setModalOpen(true);
+                  }}
+                >
+                  {votes.some(v => v.artworkId === artwork._id) ? 'Edit Vote' : 'Vote'}
+                </button>
+                {votes.some(v => v.artworkId === artwork._id) && (
                   <button
                     className="mt-2 px-4 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                     onClick={async (e) => {
                       e.stopPropagation();
-                      const vote = votes.find(v => v.artworkId === art._id);
+                      const vote = votes.find(v => v.artworkId === artwork._id);
                       if (!vote) return;
                       if (confirm('Are you sure you want to delete your vote for this artwork?')) {
                         const res = await fetch(`/api/vote/${vote._id}`, { method: 'DELETE' });
@@ -182,64 +216,6 @@ export default function VotePage() {
           )}
         </div>
       )}
-
-      {/* Judge Votes Table */}
-      <div className="mt-12">
-        <h2 className="text-xl font-bold mb-4">My Votes</h2>
-        {votes.length === 0 ? (
-          <div className="text-gray-500">You have not voted on any artworks yet.</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white dark:bg-gray-800 rounded shadow">
-              <thead>
-                <tr>
-                  <th className="px-3 py-2">Artwork</th>
-                  <th className="px-3 py-2">Artist</th>
-                  <th className="px-3 py-2">Category</th>
-                  <th className="px-3 py-2">Scores</th>
-                  <th className="px-3 py-2">Comment</th>
-                  <th className="px-3 py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {votes.map(vote => {
-                  const art = artworks.find(a => a._id === vote.artworkId);
-                  return (
-                    <tr key={vote._id} className="border-t border-gray-200 dark:border-gray-700">
-                      <td className="px-3 py-2 font-semibold">{art ? art.title : 'Unknown'}</td>
-                      <td className="px-3 py-2">{art ? art.artistName : '-'}</td>
-                      <td className="px-3 py-2">{art ? art.category : '-'}</td>
-                      <td className="px-3 py-2">
-                        {Object.entries(vote.scores).map(([k, v]) => (
-                          <span key={k} className="inline-block mr-2">{k}: {v}</span>
-                        ))}
-                      </td>
-                      <td className="px-3 py-2">{vote.comment || '-'}</td>
-                      <td className="px-3 py-2">
-                        <button
-                          className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
-                          onClick={async () => {
-                            if (confirm('Are you sure you want to delete this vote?')) {
-                              const res = await fetch(`/api/vote/${vote._id}`, { method: 'DELETE' });
-                              if (res.ok) {
-                                setVotes(votes => votes.filter(v => v._id !== vote._id));
-                                alert('Vote deleted.');
-                              } else {
-                                alert('Failed to delete vote.');
-                              }
-                            }
-                          }}
-                        >Delete</button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
       <VoteModal
         artwork={selectedArtwork}
         open={modalOpen}

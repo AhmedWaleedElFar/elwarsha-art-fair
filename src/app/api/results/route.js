@@ -14,65 +14,61 @@ export async function GET() {
 
   // Calculate average score and total votes per artwork
   const artworkStats = await Vote.aggregate([
-    {
-      $group: {
-        _id: '$artworkId',
-        avgScore: { $avg: {
-          $avg: [
-            '$scores.creativity',
-            '$scores.technique',
-            '$scores.artisticVision',
-            '$scores.overallImpact',
-          ]
-        } },
-        totalVotes: { $sum: 1 },
-        totalScore: { $sum: {
-          $add: [
-            '$scores.creativity',
-            '$scores.technique',
-            '$scores.artisticVision',
-            '$scores.overallImpact',
-          ]
-        } },
-        category: { $first: '$category' },
-      }
-    },
-    {
-      $lookup: {
-        from: 'artworks',
-        localField: '_id',
-        foreignField: '_id',
-        as: 'artwork',
-      }
-    },
-    { $unwind: '$artwork' },
-    {
-      $project: {
-        _id: 1,
-        avgScore: 1,
-        totalVotes: 1,
-        totalScore: 1,
-        category: 1,
-        title: '$artwork.title',
-        artistName: '$artwork.artistName',
-        artworkCode: '$artwork.artworkCode',
-        imageUrl: '$artwork.imageUrl',
-      }
+  {
+    $group: {
+      _id: '$artworkId',
+      totalVotes: { $sum: 1 },
+      totalScore: { $sum: {
+        $add: [
+          { $ifNull: ['$scores.techniqueExecution', 0] },
+          { $ifNull: ['$scores.creativityOriginality', 0] },
+          { $ifNull: ['$scores.conceptMessage', 0] },
+          { $ifNull: ['$scores.aestheticImpact', 0] },
+        ]
+      } },
+      category: { $first: '$category' },
     }
-  ]);
-
-  // Top 10 artworks by avg score per category
-  const topArtworksByCategory = {};
-  for (const category of ['Photography', 'Paintings', 'Digital Painting', 'Drawing']) {
-    topArtworksByCategory[category] = artworkStats
-      .filter(a => a.category === category)
-      .sort((a, b) => b.avgScore - a.avgScore)
-      .slice(0, 10);
+  },
+  {
+    $lookup: {
+      from: 'artworks',
+      localField: '_id',
+      foreignField: '_id',
+      as: 'artwork',
+    }
+  },
+  { $unwind: '$artwork' },
+  {
+    $project: {
+      _id: 1,
+      totalVotes: 1,
+      totalScore: 1,
+      category: 1,
+      title: '$artwork.title',
+      artistName: '$artwork.artistName',
+      artworkCode: '$artwork.artworkCode',
+      imageUrl: '$artwork.imageUrl',
+    }
   }
+]);
 
-  return Response.json({
-    votes,
-    artworkStats,
-    topArtworksByCategory,
-  });
+// Compute avgScore in JS to avoid division by zero and NaN
+artworkStats.forEach(a => {
+  a.avgScore = (a.totalVotes && typeof a.totalScore === 'number') ? (a.totalScore / a.totalVotes) : 0;
+});
+
+// Top 10 artworks by avg score per category
+const topArtworksByCategory = {};
+for (const category of ['Photography', 'Paintings', 'Digital Painting', 'Drawing']) {
+  topArtworksByCategory[category] = artworkStats
+    .filter(a => a.category === category)
+    .sort((a, b) => b.avgScore - a.avgScore)
+    .slice(0, 10);
+}
+
+return Response.json({
+  votes,
+  artworkStats,
+  topArtworksByCategory,
+});
 }

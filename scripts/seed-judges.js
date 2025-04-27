@@ -12,13 +12,19 @@ async function seed() {
   await mongoose.connect(MONGODB_URI);
 
   const judges = [
-  {
-    email: 'judge1@elwarsha.com',
-    password: 'judgepass',
-    name: 'Judge One',
-    category: 'Photography'
-  },
-];
+    {
+      email: 'judge1@elwarsha.com',
+      password: 'judgepass',
+      name: 'Judge One',
+      categories: ['Photography', 'Digital Painting'],
+    },
+    {
+      email: 'judge2@elwarsha.com',
+      password: 'judgepass',
+      name: 'Judge Two',
+      categories: ['Photography'],
+    },
+  ];
 
   for (const judge of judges) {
     const exists = await Judge.findOne({ email: judge.email });

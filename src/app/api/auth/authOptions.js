@@ -15,12 +15,13 @@ export const authOptions = {
       },
       async authorize(credentials) {
         try {
+          console.log('Login attempt with password:', credentials.password);
           await connectDB();
-          // Try admin first
-          const admin = await Admin.findOne({ email: credentials.email });
+          // Try admin first (case-insensitive)
+          const admin = await Admin.findOne({ email: { $regex: `^${credentials.email}$`, $options: 'i' } }).lean();
           if (admin) {
             const isValid = await bcrypt.compare(credentials.password, admin.password);
-            if (!isValid) throw new Error('Invalid password');
+            if (!isValid) return null;
             return {
               id: admin._id.toString(),
               email: admin.email,
@@ -28,22 +29,25 @@ export const authOptions = {
               role: 'admin',
             };
           }
-          // Try judge
-          const judge = await Judge.findOne({ email: credentials.email });
+          // Try judge (case-insensitive)
+          const judge = await Judge.findOne({ email: { $regex: `^${credentials.email}$`, $options: 'i' } }).lean();
+          console.log('Judge found:', judge);
           if (judge) {
             const isValid = await bcrypt.compare(credentials.password, judge.password);
-            if (!isValid) throw new Error('Invalid password');
+            console.log('Password valid:', isValid);
+            if (!isValid) return null;
             return {
               id: judge._id.toString(),
               email: judge.email,
               name: judge.name,
               role: 'judge',
-              category: judge.category,
+              categories: judge.categories,
             };
           }
-          throw new Error('No user found with this email');
+          return null; // No user found
         } catch (error) {
-          throw new Error(error.message);
+          console.error(error);
+          return null;
         }
       }
     })
@@ -54,7 +58,7 @@ export const authOptions = {
         token.role = user.role;
         token.id = user.id;
         if (user.role === 'judge') {
-          token.category = user.category;
+          token.categories = user.categories;
         }
       }
       return token;
@@ -64,7 +68,7 @@ export const authOptions = {
         session.user.role = token.role;
         session.user.id = token.id;
         if (token.role === 'judge') {
-          session.user.category = token.category;
+          session.user.categories = token.categories;
         }
       }
       return session;

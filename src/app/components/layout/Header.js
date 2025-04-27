@@ -16,13 +16,21 @@ export default function Header() {
           <div className="flex gap-4 items-center">
             {/* Show Vote for judges only */}
             {user?.role === 'judge' && (
-              <Link 
-                href="/vote" 
-                className="text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
-              >
-                Vote
-              </Link>
-            )}
+  <>
+    <Link 
+      href="/vote" 
+      className="text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
+    >
+      Vote
+    </Link>
+    <Link 
+      href="/judge-votes" 
+      className="text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
+    >
+      My Votes
+    </Link>
+  </>
+)}
             {/* Show Admin for admins only */}
             {user?.role === 'admin' && (
               <Link 
