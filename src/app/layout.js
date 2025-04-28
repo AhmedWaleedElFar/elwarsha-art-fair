@@ -14,8 +14,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={`${geist.className} antialiased bg-gray-50 dark:bg-gray-900`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${geist.className} antialiased bg-gray-50 dark:bg-gray-900`} suppressHydrationWarning>
         <Providers>
           <Layout>{children}</Layout>
         </Providers>

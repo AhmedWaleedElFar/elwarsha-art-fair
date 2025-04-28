@@ -20,62 +20,27 @@ const Artwork = mongoose.models.Artwork || mongoose.model('Artwork', artworkSche
 async function seed() {
   await mongoose.connect(MONGODB_URI);
 
-  const artworks = [
-    {
-      title: 'Sunset Boulevard',
-      description: 'A vibrant sunset over the city skyline.',
-      category: 'Photography',
-      artistName: 'Alice Smith',
-      artworkCode: 'PHO-001',
-      imageUrl: 'https://picsum.photos/id/1015/400/300',
-      orderWithinCategory: 1,
-    },
-    {
-      title: 'Forest Dreams',
-      description: 'A dreamy painting of a lush green forest.',
-      category: 'Paintings',
-      artistName: 'Bob Lee',
-      artworkCode: 'PAI-002',
-      imageUrl: 'https://picsum.photos/id/1025/400/300',
-      orderWithinCategory: 1,
-    },
-    {
-      title: 'Digital Mirage',
-      description: 'A surreal digital painting blending nature and technology.',
-      category: 'Digital Painting',
-      artistName: 'Clara Zhang',
-      artworkCode: 'DIG-003',
-      imageUrl: 'https://picsum.photos/id/1035/400/300',
-      orderWithinCategory: 1,
-    },
-    {
-      title: 'The Thinker',
-      description: 'A pencil drawing capturing a moment of deep thought.',
-      category: 'Drawing',
-      artistName: 'David Kim',
-      artworkCode: 'DRA-004',
-      imageUrl: 'https://picsum.photos/id/1045/400/300',
-      orderWithinCategory: 1,
-    },
-    {
-      title: 'Urban Reflections',
-      description: 'City lights reflected on wet pavement.',
-      category: 'Photography',
-      artistName: 'Elena Rossi',
-      artworkCode: 'PHO-005',
-      imageUrl: 'https://picsum.photos/id/1055/400/300',
-      orderWithinCategory: 2,
-    },
-    {
-      title: 'Colorful Chaos',
-      description: 'An abstract painting full of energy and color.',
-      category: 'Paintings',
-      artistName: 'Faisal Ahmed',
-      artworkCode: 'PAI-006',
-      imageUrl: 'https://picsum.photos/id/1065/400/300',
-      orderWithinCategory: 2,
-    },
-  ];
+  const artworks = [];
+const categories = [
+  { name: 'Photography', prefix: 'PHO', startId: 1015 },
+  { name: 'Paintings', prefix: 'PAI', startId: 2001 },
+  { name: 'Digital Painting', prefix: 'DIG', startId: 3001 },
+  { name: 'Drawing', prefix: 'DRA', startId: 4001 },
+];
+
+categories.forEach((cat, i) => {
+  for (let j = 1; j <= 15; j++) {
+    artworks.push({
+      title: `${cat.name} Piece ${j}`,
+      description: `Sample description for ${cat.name} artwork #${j}.`,
+      category: cat.name,
+      artistName: `Artist ${cat.prefix}-${j}`,
+      artworkCode: `${cat.prefix}-${String(j).padStart(3, '0')}`,
+      imageUrl: `https://picsum.photos/id/${cat.startId + j}/400/300`,
+      orderWithinCategory: j,
+    });
+  }
+});
 
   for (const art of artworks) {
     const exists = await Artwork.findOne({ artworkCode: art.artworkCode });

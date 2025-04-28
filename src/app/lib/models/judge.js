@@ -19,11 +19,11 @@ const judgeSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  category: {
+  categories: [{
     type: String,
     enum: ['Photography', 'Paintings', 'Digital Painting', 'Drawing'],
     required: true,
-  },
+  }],
   createdAt: {
     type: Date,
     default: Date.now,

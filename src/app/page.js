@@ -1,5 +1,9 @@
-import Link from 'next/link';
+"use client";
 
+import Link from 'next/link';
+import React from 'react';
+import HomeSignInOrDashboardButton from './components/HomeSignInOrDashboardButton';
+import CategoriesSection from './components/CategoriesSection';
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
@@ -12,28 +16,13 @@ export default function Home() {
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
             Welcome to the Digital Art Exhibition & Competition
           </p>
-          <Link 
-            href="/login"
-            className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 md:py-4 md:text-lg md:px-10"
-          >
-            Sign In
-          </Link>
+          {/* Role-based Sign In / Dashboard / Voting button */}
+          <HomeSignInOrDashboardButton />
         </div>
 
         {/* Categories Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-          {[
-            { title: 'Photography', description: 'Capturing moments in time' },
-            { title: 'Paintings', description: 'Traditional artistic expression' },
-            { title: 'Digital Painting', description: 'Modern digital masterpieces' },
-            { title: 'Drawing', description: 'Sketches and illustrations' },
-          ].map((category) => (
-            <div key={category.title} className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-              <h3 className="text-xl font-semibold mb-2">{category.title}</h3>
-              <p className="text-gray-600 dark:text-gray-300">{category.description}</p>
-            </div>
-          ))}
-        </div>
+        {/* Memoized categories section for performance */}
+        <CategoriesSection />
 
         {/* Event Details */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
@@ -46,10 +35,10 @@ export default function Home() {
             <div className="flex flex-col space-y-2">
               <h3 className="font-semibold">Judging Criteria:</h3>
               <ul className="list-disc list-inside text-gray-600 dark:text-gray-300">
-                <li>Creativity and Innovation</li>
-                <li>Technical Excellence</li>
-                <li>Artistic Vision</li>
-                <li>Overall Impact</li>
+                <li>Technique Execution</li>
+                <li>Creativity & Originality</li>
+                <li>Concept & Message</li>
+                <li>Aesthetic Impact</li>
               </ul>
             </div>
           </div>

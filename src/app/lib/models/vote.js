@@ -12,29 +12,29 @@ const voteSchema = new mongoose.Schema({
     required: true,
   },
   scores: {
-    creativity: {
+    techniqueExecution: {
       type: Number,
       required: true,
-      min: 1,
-      max: 5,
+      min: 0,
+      max: 10,
     },
-    technique: {
+    creativityOriginality: {
       type: Number,
       required: true,
-      min: 1,
-      max: 5,
+      min: 0,
+      max: 10,
     },
-    artisticVision: {
+    conceptMessage: {
       type: Number,
       required: true,
-      min: 1,
-      max: 5,
+      min: 0,
+      max: 10,
     },
-    overallImpact: {
+    aestheticImpact: {
       type: Number,
       required: true,
-      min: 1,
-      max: 5,
+      min: 0,
+      max: 10,
     },
   },
   comment: {
@@ -53,11 +53,10 @@ const voteSchema = new mongoose.Schema({
   },
 });
 
-// Calculate average score before saving
+// Calculate total score before saving
 voteSchema.pre('save', function(next) {
   const scores = this.scores;
-  const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
-  this.averageScore = totalScore / Object.keys(scores).length;
+  this.totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
   next();
 });
 

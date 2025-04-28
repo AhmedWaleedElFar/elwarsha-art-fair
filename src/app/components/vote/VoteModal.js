@@ -6,10 +6,10 @@ const PdfImagePreview = dynamic(() => import('../PdfImagePreview'), { ssr: false
 
 export default function VoteModal({ artwork, open, onClose, onSubmit, previousVote }) {
   const [scores, setScores] = useState(previousVote ? previousVote.scores : {
-    creativity: 3,
-    technique: 3,
-    artisticVision: 3,
-    overallImpact: 3,
+    techniqueExecution: 5,
+    creativityOriginality: 5,
+    conceptMessage: 5,
+    aestheticImpact: 5,
   });
   const [comment, setComment] = useState(previousVote ? previousVote.comment : '');
   const [submitting, setSubmitting] = useState(false);
@@ -22,10 +22,10 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
       setComment(previousVote.comment || '');
     } else if (open) {
       setScores({
-        creativity: 3,
-        technique: 3,
-        artisticVision: 3,
-        overallImpact: 3,
+        techniqueExecution: 5,
+        creativityOriginality: 5,
+        conceptMessage: 5,
+        aestheticImpact: 5,
       });
       setComment('');
     }
@@ -70,7 +70,7 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
                 return url && url.toLowerCase().endsWith('.pdf');
               }
               function isImageUrl(url) {
-                return /\.(jpe?g|png|gif|webp)$/i.test(url);
+                return /\.(jpe?g|png|gif|webp)$/i.test(url) || url?.startsWith('https://picsum.photos/');
               }
               const url = artwork.imageUrl;
               if (isGoogleDriveLink(url) || isPdfUrl(url)) {
@@ -92,24 +92,24 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
 
             <form onSubmit={handleSubmit} className="space-y-3 mt-4">
               <div>
-                <label className="font-semibold">Creativity</label>
-                <input type="range" name="creativity" min="1" max="5" value={scores.creativity} onChange={handleChange} className="w-full" />
-                <span className="ml-2">{scores.creativity}</span>
+                <label className="font-semibold">Technique & Execution</label>
+                <input type="range" name="techniqueExecution" min="0" max="10" value={scores.techniqueExecution} onChange={handleChange} className="w-full" />
+                <span className="ml-2">{scores.techniqueExecution}</span>
               </div>
               <div>
-                <label className="font-semibold">Technique</label>
-                <input type="range" name="technique" min="1" max="5" value={scores.technique} onChange={handleChange} className="w-full" />
-                <span className="ml-2">{scores.technique}</span>
+                <label className="font-semibold">Creativity & Originality</label>
+                <input type="range" name="creativityOriginality" min="0" max="10" value={scores.creativityOriginality} onChange={handleChange} className="w-full" />
+                <span className="ml-2">{scores.creativityOriginality}</span>
               </div>
               <div>
-                <label className="font-semibold">Artistic Vision</label>
-                <input type="range" name="artisticVision" min="1" max="5" value={scores.artisticVision} onChange={handleChange} className="w-full" />
-                <span className="ml-2">{scores.artisticVision}</span>
+                <label className="font-semibold">Concept / Message</label>
+                <input type="range" name="conceptMessage" min="0" max="10" value={scores.conceptMessage} onChange={handleChange} className="w-full" />
+                <span className="ml-2">{scores.conceptMessage}</span>
               </div>
               <div>
-                <label className="font-semibold">Overall Impact</label>
-                <input type="range" name="overallImpact" min="1" max="5" value={scores.overallImpact} onChange={handleChange} className="w-full" />
-                <span className="ml-2">{scores.overallImpact}</span>
+                <label className="font-semibold">Aesthetic Impact</label>
+                <input type="range" name="aestheticImpact" min="0" max="10" value={scores.aestheticImpact} onChange={handleChange} className="w-full" />
+                <span className="ml-2">{scores.aestheticImpact}</span>
               </div>
               <div>
                 <label className="font-semibold">Comment (optional)</label>

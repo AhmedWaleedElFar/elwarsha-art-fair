@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
 
 // Required for pdfjs worker
@@ -22,25 +22,40 @@ function getGoogleDriveProxyUrl(url) {
 
 export default function PdfImagePreview({ url, width = 192, height = 192 }) {
   const canvasRef = useRef(null);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     const render = async () => {
-      const pdfUrl = getGoogleDriveProxyUrl(url);
-      const loadingTask = pdfjsLib.getDocument(pdfUrl);
-      const pdf = await loadingTask.promise;
-      const page = await pdf.getPage(1);
-      const viewport = page.getViewport({ scale: 1 });
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      // Scale to fit
-      const scale = Math.min(width / viewport.width, height / viewport.height);
-      const scaledViewport = page.getViewport({ scale });
-      canvas.width = scaledViewport.width;
-      canvas.height = scaledViewport.height;
-      const context = canvas.getContext('2d');
-      await page.render({ canvasContext: context, viewport: scaledViewport }).promise;
+      try {
+        setError(null);
+        const pdfUrl = getGoogleDriveProxyUrl(url);
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        const pdf = await loadingTask.promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 1 });
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        // Scale to fit
+        const scale = Math.min(width / viewport.width, height / viewport.height);
+        const scaledViewport = page.getViewport({ scale });
+        canvas.width = scaledViewport.width;
+        canvas.height = scaledViewport.height;
+        const context = canvas.getContext('2d');
+        await page.render({ canvasContext: context, viewport: scaledViewport }).promise;
+      } catch (err) {
+        setError('Failed to load PDF preview.');
+      }
     };
     render();
   }, [url, width, height]);
+
+  if (error) {
+    return (
+      <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9f9f9', borderRadius: 8 }}>
+        <span style={{ color: '#b00' }}>{error}</span>
+      </div>
+    );
+  }
 
   return (
     <canvas

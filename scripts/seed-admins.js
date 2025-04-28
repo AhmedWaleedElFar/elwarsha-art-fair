@@ -21,7 +21,9 @@ async function seed() {
   for (const admin of admins) {
     const exists = await Admin.findOne({ email: admin.email });
     if (!exists) {
-      await Admin.create(admin);
+      await Admin.create({
+        ...admin
+      });
       console.log(`Seeded admin: ${admin.email}`);
     } else {
       console.log(`Admin already exists: ${admin.email}`);

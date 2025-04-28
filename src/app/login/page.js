@@ -15,8 +15,10 @@ export default function LoginPage() {
     if (status === 'loading') return;
     if (session?.user?.role === 'admin') {
       router.replace('/admin');
-    } else if (session?.user?.role === 'judge' && session?.user?.category) {
+      return;
+    } else if (session?.user?.role === 'judge' && Array.isArray(session.user.categories) && session.user.categories.length > 0) {
       router.replace('/vote');
+      return;
     }
   }, [session, status, router]);
 
@@ -37,17 +39,33 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        console.log(result.error);
         setError('Invalid email or password');
       } else {
-        // Use session directly after login
-        await router.replace('/'); // This will trigger useEffect to handle the redirect
+        // Fetch the session and redirect to the correct dashboard
+        const { getSession } = await import('next-auth/react');
+        const session = await getSession();
+        if (session?.user?.role === 'admin') {
+          await router.replace('/admin');
+        } else if (session?.user?.role === 'judge' && Array.isArray(session.user.categories) && session.user.categories.length > 0) {
+          await router.replace('/vote');
+        } else {
+          await router.replace('/'); // fallback
+        }
       }
     } catch (error) {
       setError('An error occurred during login');
     } finally {
       setLoading(false);
     }
+  }
+
+  if (status === 'loading' || (session && (session.user.role === 'admin' || (session.user.role === 'judge' && session.user.category)))) {
+    // Show a loading spinner while determining where to redirect
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <span className="text-lg text-gray-600 dark:text-gray-300">Redirecting...</span>
+      </div>
+    );
   }
 
   return (

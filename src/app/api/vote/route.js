@@ -1,12 +1,12 @@
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/authOptions.js';
+import { authOptions } from '@/app/api/auth/authOptions';
 import connectDB from '@/app/lib/db';
 import Vote from '@/app/lib/models/vote';
 import Artwork from '@/app/lib/models/artwork';
 
 export async function GET(req) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user?.category) {
+  if (!session || session.user.role !== 'judge' || !session.user.categories || session.user.categories.length === 0) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
   await connectDB();
@@ -22,7 +22,7 @@ export async function GET(req) {
 
 export async function POST(req) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user?.category) {
+  if (!session || session.user.role !== 'judge' || !session.user.categories || session.user.categories.length === 0) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
   await connectDB();

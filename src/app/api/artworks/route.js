@@ -1,7 +1,7 @@
 import connectDB from '@/app/lib/db';
 import Artwork from '@/app/lib/models/artwork';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/authOptions.js';
+import { authOptions } from '@/app/api/auth/authOptions';
 
 export async function GET(req) {
   const session = await getServerSession(authOptions);
@@ -12,8 +12,8 @@ export async function GET(req) {
   }
   if (session.user.role === 'admin') {
     artworks = await Artwork.find({}).sort({ category: 1, orderWithinCategory: 1 });
-  } else if (session.user.category) {
-    artworks = await Artwork.find({ category: session.user.category }).sort({ orderWithinCategory: 1 });
+  } else if (session.user.categories && Array.isArray(session.user.categories)) {
+    artworks = await Artwork.find({ category: { $in: session.user.categories } }).sort({ orderWithinCategory: 1 });
   }
   return Response.json({ artworks });
 }

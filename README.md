@@ -1,5 +1,34 @@
 # El Warsha Art Fair - Voting Platform
 
+## 🚀 2025 Optimization & Performance Improvements
+
+**This project underwent a comprehensive performance and UX optimization in 2025.**
+
+### Key Improvements
+- **Image Optimization:**
+  - All artwork images now use Next.js `<Image />` for automatic lazy loading, responsive sizing, and improved performance.
+- **Memoization:**
+  - All static data (categories, filter options, grouped lists) and derived lists are memoized using `useMemo` for instant UI updates and to prevent unnecessary re-renders.
+  - Components like `ArtPreview`, `CategoryTagSelector`, and `BulkCSVUpload` are wrapped in `React.memo` to avoid unnecessary re-renders.
+- **Skeleton Loaders:**
+  - All major tables, lists, and galleries (artworks, judges, votes, admin dashboard) show animated skeleton loaders while fetching data, improving perceived speed.
+- **Efficient Data Fetching:**
+  - API data is fetched in parallel where possible (using `Promise.all`). Loading states are managed to minimize UI blocking.
+- **UI/UX Improvements:**
+  - All select dropdowns and filter controls are now instant and smooth thanks to memoization.
+  - Buttons and navigation are responsive, and user flows (judges, admins, voting) are optimized for minimal wait time.
+  - Role-based redirects and dynamic home page buttons for a seamless user journey.
+- **Code Quality:**
+  - Lint errors fixed, code refactored for clarity and maintainability.
+
+### Recommendations for Further Optimization
+- Ensure all API endpoints use `.lean()` for MongoDB queries and return only necessary fields.
+- For very large lists (artworks, votes), implement pagination or infinite scroll.
+- Host static assets (images, PDFs) on a CDN for even faster load times.
+- Review ARIA roles and keyboard navigation for accessibility improvements.
+
+---
+
 A full-stack web application for managing art exhibition voting, built with Next.js, Node.js, and MongoDB.
 
 ## 🎨 Features
