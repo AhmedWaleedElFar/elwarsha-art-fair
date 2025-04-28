@@ -10,9 +10,12 @@ export default function Header() {
     <header className="bg-[#1e1e1e] shadow-md border-b border-gray-800">
       <nav className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-[#93233B] hover:text-[#7a1d31] transition-colors">
-            El Warsha Art Fair
-          </Link>
+          <div className="flex items-center gap-4">
+            <img src="/logo.png" alt="Elwarsha Art Fair Logo" style={{ height: 40, paddingRight: 16 }} />
+            <Link href="/" className="text-2xl font-bold text-[#93233B] hover:text-[#7a1d31] transition-colors">
+              
+            </Link>
+          </div>
           <div className="flex gap-4 items-center">
             {/* Show Vote for judges only */}
             {user?.role === 'judge' && (
