@@ -39,7 +39,6 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        console.log(result.error);
         setError('Invalid email or password');
       } else {
         // Fetch the session and redirect to the correct dashboard

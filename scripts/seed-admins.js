@@ -21,10 +21,8 @@ async function seed() {
   for (const admin of admins) {
     const exists = await Admin.findOne({ email: admin.email });
     if (!exists) {
-      const hashedPassword = await bcrypt.hash(admin.password, 10);
       await Admin.create({
-        ...admin,
-        password: hashedPassword,
+        ...admin
       });
       console.log(`Seeded admin: ${admin.email}`);
     } else {

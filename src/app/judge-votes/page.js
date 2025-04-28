@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -44,7 +44,7 @@ export default function JudgeVotesPage() {
   }, [session, status, router]);
 
   // Memoize grouped votes by category and sort by total score descending
-  const votesByCategory = React.useMemo(() => {
+  const votesByCategory = useMemo(() => {
     const grouped = votes.reduce((acc, vote) => {
       const cat = vote.category || "Uncategorized";
       if (!acc[cat]) acc[cat] = [];

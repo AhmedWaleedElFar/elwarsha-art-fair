@@ -15,7 +15,6 @@ export const authOptions = {
       },
       async authorize(credentials) {
         try {
-          console.log('Login attempt with password:', credentials.password);
           await connectDB();
           // Try admin first (case-insensitive)
           const admin = await Admin.findOne({ email: { $regex: `^${credentials.email}$`, $options: 'i' } }).lean();
@@ -31,10 +30,8 @@ export const authOptions = {
           }
           // Try judge (case-insensitive)
           const judge = await Judge.findOne({ email: { $regex: `^${credentials.email}$`, $options: 'i' } }).lean();
-          console.log('Judge found:', judge);
           if (judge) {
             const isValid = await bcrypt.compare(credentials.password, judge.password);
-            console.log('Password valid:', isValid);
             if (!isValid) return null;
             return {
               id: judge._id.toString(),
