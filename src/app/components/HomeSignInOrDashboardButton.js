@@ -8,7 +8,7 @@ const HomeSignInOrDashboardButton = memo(function HomeSignInOrDashboardButton() 
 
   if (status === "loading") {
     return (
-      <div className="inline-flex items-center justify-center px-8 py-3 text-base font-medium rounded-md text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 animate-pulse">
+      <div className="inline-flex items-center justify-center px-8 py-3 text-base font-medium rounded-md text-gray-300 bg-[#2a2a2a] animate-pulse shadow-md">
         Loading...
       </div>
     );
@@ -19,7 +19,7 @@ const HomeSignInOrDashboardButton = memo(function HomeSignInOrDashboardButton() 
       <Link
         href="/admin"
         prefetch={true}
-        className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 md:py-4 md:text-lg md:px-10"
+        className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#93233B] hover:bg-[#7a1d31] transition-colors md:py-4 md:text-lg md:px-10 shadow-md"
       >
         Go to Dashboard
       </Link>
@@ -30,7 +30,7 @@ const HomeSignInOrDashboardButton = memo(function HomeSignInOrDashboardButton() 
       <Link
         href="/vote"
         prefetch={true}
-        className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 md:py-4 md:text-lg md:px-10"
+        className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#93233B] hover:bg-[#7a1d31] transition-colors md:py-4 md:text-lg md:px-10 shadow-md"
       >
         Go to Voting Page
       </Link>
@@ -41,7 +41,7 @@ const HomeSignInOrDashboardButton = memo(function HomeSignInOrDashboardButton() 
     <Link
       href="/login"
       prefetch={true}
-      className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 md:py-4 md:text-lg md:px-10"
+      className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#93233B] hover:bg-[#7a1d31] transition-colors md:py-4 md:text-lg md:px-10 shadow-md"
     >
       Sign In
     </Link>

@@ -26,10 +26,10 @@ const CategoryTagSelector = memo(function CategoryTagSelector({ categories, sele
           type="button"
           key={cat}
           onClick={() => toggleCategory(cat)}
-          className={`px-3 py-1 rounded-full border transition-colors duration-150 text-sm select-none focus:outline-none focus:ring-2 focus:ring-purple-400 
+          className={`px-3 py-1 rounded-full border transition-colors duration-150 text-sm select-none focus:outline-none focus:ring-2 focus:ring-[#93233B] 
             ${selected.includes(cat)
-              ? "bg-purple-600 text-white border-purple-600"
-              : "bg-gray-200 text-gray-700 border-gray-300 hover:bg-purple-100"}
+              ? "bg-[#93233B] text-white border-[#93233B]"
+              : "bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600"}
           `}
         >
           {cat}
@@ -96,79 +96,81 @@ export default function AdminJudgesPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-6">Manage Judges</h1>
-      <form onSubmit={handleSubmit} className="mb-8 space-y-4 p-4 bg-white dark:bg-gray-800 rounded shadow">
-        <div>
-          <label className="block mb-1 font-medium">Email</label>
-          <input
-            type="email"
-            className="w-full p-2 border rounded"
-            value={form.email}
-            required
-            onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-          />
-        </div>
-        <div>
-          <label className="block mb-1 font-medium">Name</label>
-          <input
-            type="text"
-            className="w-full p-2 border rounded"
-            value={form.name}
-            required
-            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-          />
-        </div>
-        <div>
-          <label className="block mb-1 font-medium">Password</label>
-          <input
-            type="password"
-            className="w-full p-2 border rounded"
-            value={form.password}
-            required
-            minLength={6}
-            onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-          />
-        </div>
-        <div>
-          <label className="block mb-1 font-medium">Categories</label>
-          <CategoryTagSelector
-            categories={CATEGORIES}
-            selected={form.categories}
-            onChange={cats => setForm(f => ({ ...f, categories: cats }))}
-          />
-          <span className="text-xs text-gray-500">Tap to select one or more categories</span>
-        </div>
-        {error && <div className="text-red-500">{error}</div>}
-        {success && <div className="text-green-600">{success}</div>}
-        <button
-          type="submit"
-          className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-          disabled={loading}
-        >
-          {loading ? "Creating..." : "Create Judge"}
-        </button>
-      </form>
-      <h2 className="text-xl font-semibold mb-2">Existing Judges</h2>
-      <ul className="bg-white dark:bg-gray-800 rounded shadow p-4">
+    <div className="min-h-screen bg-black text-white px-4 py-8">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">Manage Judges</h1>
+        <form onSubmit={handleSubmit} className="mb-8 space-y-4 p-6 bg-[#1e1e1e] rounded-lg shadow-lg">
+          <div>
+            <label className="block mb-2 font-medium text-gray-300">Email</label>
+            <input
+              type="email"
+              className="w-full px-4 py-2 bg-[#1e1e1e] border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]"
+              value={form.email}
+              required
+              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className="block mb-2 font-medium text-gray-300">Name</label>
+            <input
+              type="text"
+              className="w-full px-4 py-2 bg-[#1e1e1e] border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]"
+              value={form.name}
+              required
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className="block mb-2 font-medium text-gray-300">Password</label>
+            <input
+              type="password"
+              className="w-full px-4 py-2 bg-[#1e1e1e] border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]"
+              value={form.password}
+              required
+              minLength={6}
+              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className="block mb-2 font-medium text-gray-300">Categories</label>
+            <CategoryTagSelector
+              categories={CATEGORIES}
+              selected={form.categories}
+              onChange={cats => setForm(f => ({ ...f, categories: cats }))}
+            />
+            <span className="text-xs text-gray-400">Tap to select one or more categories</span>
+          </div>
+          {error && <div className="text-[#ff6b6b] mt-2">{error}</div>}
+          {success && <div className="text-green-400 mt-2">{success}</div>}
+          <button
+            type="submit"
+            className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors text-sm font-medium"
+            disabled={loading}
+          >
+            {loading ? "Creating..." : "Create Judge"}
+          </button>
+        </form>
+        <h2 className="text-xl font-medium mb-4 text-gray-300">Existing Judges</h2>
+        <ul className="bg-[#1e1e1e] rounded-lg shadow-lg p-6">
         {loadingJudges ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <li key={i} className="mb-2 border-b pb-2 animate-pulse">
-              <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-1" />
-              <div className="h-3 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
+            <li key={i} className="mb-3 border-b border-gray-600 pb-3 animate-pulse">
+              <div className="h-4 w-32 bg-[#2a2a2a] rounded mb-2" />
+              <div className="h-3 w-48 bg-[#2a2a2a] rounded" />
             </li>
           ))
         ) : (
           <>
-            {judges.length === 0 && <li className="text-gray-500">No judges found.</li>}
+            {judges.length === 0 && <li className="text-gray-400">No judges found.</li>}
             {judges.map(j => (
-              <li key={j._id} className="mb-2 border-b pb-2">
-                <span className="font-medium">{j.name}</span> (<span>{j.email}</span>) - <span>{Array.isArray(j.categories) ? j.categories.join(', ') : (j.category || '')}</span>
+              <li key={j._id} className="mb-3 border-b border-gray-600 pb-3 hover:bg-[#2a2a2a] rounded-md px-3 py-2">
+                <span className="font-medium text-white">{j.name}</span> <span className="text-gray-400">({j.email})</span>                <span className="text-[#93233B]">{Array.isArray(j.categories) ? j.categories.join(', ') : (j.category || '')}</span>
               </li>
             ))}
           </>
         )}
       </ul>
+      </div>
     </div>
   );
 }

@@ -41,7 +41,7 @@ const ArtPreview = memo(function ArtPreview({ url, title, size = 192 }) {
           alt={title}
           width={size}
           height={size}
-          style={{ objectFit: 'contain', borderRadius: 8, background: '#f9f9f9' }}
+          style={{ objectFit: 'contain', borderRadius: 8, background: '#2a2a2a' }}
           className="object-cover rounded mb-4"
           loading="lazy"
         />
@@ -59,7 +59,7 @@ const ArtPreview = memo(function ArtPreview({ url, title, size = 192 }) {
         alt={title}
         width={size}
         height={size}
-        style={{ objectFit: 'contain', borderRadius: 8, background: '#f9f9f9' }}
+        style={{ objectFit: 'contain', borderRadius: 8, background: '#2a2a2a' }}
         className="object-cover rounded mb-4"
         loading="lazy"
       />
@@ -68,7 +68,7 @@ const ArtPreview = memo(function ArtPreview({ url, title, size = 192 }) {
     return <PdfImagePreview url={url} width={size} height={size} />;
   }
   // fallback: unsupported type
-  return <div>Unsupported file type {isPdfUrl(url)} {isImageUrl(url)}</div>;
+  return <div className="w-full h-48 flex items-center justify-center bg-[#2a2a2a] rounded mb-4 text-gray-400">Unsupported file type</div>;
 });
 
 export default function VotePage() {
@@ -136,15 +136,15 @@ export default function VotePage() {
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">Vote for Artworks</h1>
+    <div className="min-h-screen bg-black text-white container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6 text-center text-white">Vote for Artworks</h1>
 
       {/* Category Selector for Judges with Multiple Categories */}
       {session && session.user?.categories && session.user.categories.length > 1 && (
         <div className="mb-6 flex justify-center">
-          <label className="mr-2 font-semibold">Category:</label>
+          <label className="mr-2 font-semibold text-gray-300">Category:</label>
           <select
-            className="p-2 border rounded"
+            className="p-2 bg-[#1e1e1e] border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]"
             value={selectedCategory}
             onChange={e => setSelectedCategory(e.target.value)}
           >
@@ -158,28 +158,30 @@ export default function VotePage() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col items-center animate-pulse">
-              <div className="w-48 h-48 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
-              <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
-              <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-1" />
-              <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
-              <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded mt-auto" />
+            <div key={i} className="bg-[#1e1e1e] rounded-lg shadow-lg p-4 flex flex-col items-center animate-pulse">
+              <div className="w-48 h-48 bg-[#2a2a2a] rounded mb-4" />
+              <div className="h-5 w-32 bg-[#2a2a2a] rounded mb-2" />
+              <div className="h-4 w-24 bg-[#2a2a2a] rounded mb-1" />
+              <div className="h-3 w-20 bg-[#2a2a2a] rounded mb-2" />
+              <div className="h-10 w-32 bg-[#2a2a2a] rounded mt-auto" />
             </div>
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {artworks.filter(a => a.category === selectedCategory).length === 0 ? (
-            <div className="col-span-full text-center text-gray-500">No artworks found.</div>
+            <div className="col-span-full text-center text-gray-400">No artworks found.</div>
           ) : (
             artworks.filter(a => a.category === selectedCategory).map(artwork => (
-              <div key={artwork._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col items-center">
-                <ArtPreview url={artwork.imageUrl} title={artwork.title} />
+              <div key={artwork._id} className="bg-[#1e1e1e] rounded-lg shadow-lg p-4 flex flex-col items-center">
+                <div className="bg-[#2a2a2a] p-2 rounded mb-4 flex items-center justify-center">
+                  <ArtPreview url={artwork.imageUrl} title={artwork.title} />
+                </div>
                 <h2 className="text-lg font-bold mt-2 mb-1 text-center">{artwork.title}</h2>
-                <div className="text-gray-600 dark:text-gray-300 text-sm mb-1">By {artwork.artistName}</div>
-                <div className="text-gray-400 text-xs mb-2">Category: {artwork.category}</div>
+                <div className="text-gray-300 text-sm mb-1">By {artwork.artistName}</div>
+                <div className="text-gray-400 text-xs mb-2">Category: <span className="text-[#93233B]">{artwork.category}</span></div>
                 <button
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mt-auto"
+                  className="bg-[#93233B] hover:bg-[#7a1d31] text-white px-4 py-2 rounded-md mt-auto transition-colors"
                   onClick={() => {
                     setSelectedArtwork(artwork);
                     setModalOpen(true);
@@ -189,7 +191,7 @@ export default function VotePage() {
                 </button>
                 {votes.some(v => v.artworkId === artwork._id) && (
                   <button
-                    className="mt-2 px-4 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                    className="mt-2 px-4 py-1 text-sm bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors"
                     onClick={async (e) => {
                       e.stopPropagation();
                       const vote = votes.find(v => v.artworkId === artwork._id);

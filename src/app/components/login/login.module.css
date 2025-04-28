@@ -1,0 +1,16 @@
+/* Override browser autofill styling */
+.loginInput:-webkit-autofill,
+.loginInput:-webkit-autofill:hover,
+.loginInput:-webkit-autofill:focus {
+  -webkit-text-fill-color: white;
+  -webkit-box-shadow: 0 0 0px 1000px #2a2a2a inset;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: white;
+}
+
+/* Firefox autofill override */
+.loginInput:autofill {
+  background-color: #2a2a2a !important;
+  color: white !important;
+  box-shadow: 0 0 0px 1000px #2a2a2a inset;
+}

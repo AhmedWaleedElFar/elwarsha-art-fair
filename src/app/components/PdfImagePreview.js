@@ -51,8 +51,10 @@ export default function PdfImagePreview({ url, width = 192, height = 192 }) {
 
   if (error) {
     return (
-      <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9f9f9', borderRadius: 8 }}>
-        <span style={{ color: '#b00' }}>{error}</span>
+      <div className="relative" style={{ width, height }}>
+        <div className="absolute inset-0 flex items-center justify-center bg-[#2a2a2a] rounded">
+          <span className="text-[#ff6b6b] text-sm">{error}</span>
+        </div>
       </div>
     );
   }
@@ -62,7 +64,7 @@ export default function PdfImagePreview({ url, width = 192, height = 192 }) {
       ref={canvasRef}
       width={width}
       height={height}
-      style={{ width, height, borderRadius: 8, background: '#f9f9f9', objectFit: 'contain', display: 'block', margin: '0 auto' }}
+      style={{ width, height, borderRadius: 8, background: '#2a2a2a', objectFit: 'contain', display: 'block', margin: '0 auto' }}
     />
   );
 }

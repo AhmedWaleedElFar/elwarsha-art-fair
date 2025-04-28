@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import styles from './VoteModal.module.css';
 import dynamic from 'next/dynamic';
 const PdfImagePreview = dynamic(() => import('../PdfImagePreview'), { ssr: false });
 
@@ -29,12 +30,29 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
       });
       setComment('');
     }
+    
+    // Update range slider fills when modal opens
+    if (open) {
+      setTimeout(() => {
+        const rangeInputs = document.querySelectorAll(`.${styles.customRange}`);
+        rangeInputs.forEach(input => {
+          const value = input.value;
+          const percent = (value / 10) * 100;
+          input.style.setProperty('--range-progress', `${percent}%`);
+        });
+      }, 50);
+    }
   }, [open, previousVote]);
 
   if (!open || !artwork) return null;
 
   function handleChange(e) {
-    setScores({ ...scores, [e.target.name]: Number(e.target.value) });
+    const value = Number(e.target.value);
+    setScores({ ...scores, [e.target.name]: value });
+    
+    // Update the range slider fill using CSS variable
+    const percent = (value / 10) * 100;
+    e.target.style.setProperty('--range-progress', `${percent}%`);
   }
 
   async function handleSubmit(e) {
@@ -51,10 +69,10 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-2xl w-full p-8 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80">
+      <div className="bg-[#1e1e1e] rounded-lg shadow-lg max-w-2xl w-full p-8 relative text-white">
         <button
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 dark:hover:text-white"
+          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors text-2xl"
           onClick={onClose}
         >
           ×
@@ -76,56 +94,56 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
               if (isGoogleDriveLink(url) || isPdfUrl(url)) {
                 return <PdfImagePreview url={url} width={288} height={288} />;
               } else if (isImageUrl(url)) {
-                return <img src={url} alt={artwork.title} className="rounded max-h-72 object-contain w-full" />;
+                return <img src={url} alt={artwork.title} className="rounded max-h-72 object-contain w-full bg-[#2a2a2a] p-2" />;
               } else {
-                return <div className="text-gray-400">Unsupported file type</div>;
+                return <div className="w-full h-48 flex items-center justify-center bg-[#2a2a2a] rounded text-gray-400">Unsupported file type</div>;
               }
             })()}
           </div>
           {/* Right: Details & Voting */}
           <div className="w-full md:w-1/2">
-            <h2 className="text-xl font-bold mb-2">{artwork.title}</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-1"><span className="font-semibold">Artist:</span> {artwork.artistName}</p>
-            <p className="text-gray-600 dark:text-gray-300 mb-1"><span className="font-semibold">Medium:</span> {artwork.category}</p>
-            <p className="text-gray-600 dark:text-gray-300 mb-1"><span className="font-semibold">Code:</span> {artwork.artworkCode}</p>
-            <p className="text-gray-600 dark:text-gray-300 mb-3"><span className="font-semibold">Description:</span> {artwork.description}</p>
+            <h2 className="text-xl font-bold mb-2 text-white">{artwork.title}</h2>
+            <p className="text-gray-300 mb-1"><span className="font-semibold text-white">Artist:</span> {artwork.artistName}</p>
+            <p className="text-gray-300 mb-1"><span className="font-semibold text-white">Medium:</span> <span className="text-[#93233B]">{artwork.category}</span></p>
+            <p className="text-gray-300 mb-1"><span className="font-semibold text-white">Code:</span> {artwork.artworkCode}</p>
+            <p className="text-gray-300 mb-3"><span className="font-semibold text-white">Description:</span> {artwork.description}</p>
 
             <form onSubmit={handleSubmit} className="space-y-3 mt-4">
               <div>
-                <label className="font-semibold">Technique & Execution</label>
-                <input type="range" name="techniqueExecution" min="0" max="10" value={scores.techniqueExecution} onChange={handleChange} className="w-full" />
-                <span className="ml-2">{scores.techniqueExecution}</span>
+                <label className="font-semibold text-white">Technique & Execution</label>
+                <input type="range" name="techniqueExecution" min="0" max="10" value={scores.techniqueExecution} onChange={handleChange} className={`w-full ${styles.customRange}`} />
+                <span className="ml-2 text-[#93233B] font-medium">{scores.techniqueExecution}</span>
               </div>
               <div>
-                <label className="font-semibold">Creativity & Originality</label>
-                <input type="range" name="creativityOriginality" min="0" max="10" value={scores.creativityOriginality} onChange={handleChange} className="w-full" />
-                <span className="ml-2">{scores.creativityOriginality}</span>
+                <label className="font-semibold text-white">Creativity & Originality</label>
+                <input type="range" name="creativityOriginality" min="0" max="10" value={scores.creativityOriginality} onChange={handleChange} className={`w-full ${styles.customRange}`} />
+                <span className="ml-2 text-[#93233B] font-medium">{scores.creativityOriginality}</span>
               </div>
               <div>
-                <label className="font-semibold">Concept / Message</label>
-                <input type="range" name="conceptMessage" min="0" max="10" value={scores.conceptMessage} onChange={handleChange} className="w-full" />
-                <span className="ml-2">{scores.conceptMessage}</span>
+                <label className="font-semibold text-white">Concept / Message</label>
+                <input type="range" name="conceptMessage" min="0" max="10" value={scores.conceptMessage} onChange={handleChange} className={`w-full ${styles.customRange}`} />
+                <span className="ml-2 text-[#93233B] font-medium">{scores.conceptMessage}</span>
               </div>
               <div>
-                <label className="font-semibold">Aesthetic Impact</label>
-                <input type="range" name="aestheticImpact" min="0" max="10" value={scores.aestheticImpact} onChange={handleChange} className="w-full" />
-                <span className="ml-2">{scores.aestheticImpact}</span>
+                <label className="font-semibold text-white">Aesthetic Impact</label>
+                <input type="range" name="aestheticImpact" min="0" max="10" value={scores.aestheticImpact} onChange={handleChange} className={`w-full ${styles.customRange}`} />
+                <span className="ml-2 text-[#93233B] font-medium">{scores.aestheticImpact}</span>
               </div>
               <div>
-                <label className="font-semibold">Comment (optional)</label>
+                <label className="font-semibold text-white">Comment (optional)</label>
                 <textarea
-                  className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-2"
+                  className="w-full rounded-md border border-gray-600 bg-[#2a2a2a] px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]"
                   rows={2}
                   value={comment}
                   onChange={e => setComment(e.target.value)}
                   placeholder="Your feedback..."
                 />
               </div>
-              {error && <div className="text-red-600 text-sm">{error}</div>}
+              {error && <div className="text-[#ff6b6b] text-sm">{error}</div>}
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded disabled:opacity-60"
+                className="w-full bg-[#93233B] hover:bg-[#7a1d31] text-white font-semibold py-2 rounded-md disabled:opacity-60 transition-colors"
               >
                 {submitting ? 'Submitting...' : 'Submit Vote'}
               </button>

@@ -75,11 +75,11 @@ const BulkCSVUpload = memo(function BulkCSVUpload({ fetchArtworks }) {
   };
 
   return (
-    <div className="mb-8 p-4 bg-white dark:bg-gray-800 rounded shadow">
-      <h2 className="text-lg font-semibold mb-2">Bulk Add Artworks via CSV</h2>
-      <form onSubmit={handleUpload} className="flex flex-col gap-2">
+    <div className="mb-8 p-6 bg-[#1e1e1e] rounded-lg shadow-lg">
+      <h2 className="text-lg font-medium mb-4 text-gray-300">Bulk Add Artworks via CSV</h2>
+      <form onSubmit={handleUpload} className="flex flex-col gap-3">
         <div className="mb-2">
-          <label htmlFor="csv-upload" className="inline-block bg-purple-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-purple-700">
+          <label htmlFor="csv-upload" className="inline-block bg-[#93233B] text-white px-4 py-2 rounded-md cursor-pointer hover:bg-[#7a1d31] transition-colors text-sm font-medium">
             {csvFile ? "Change CSV File" : "Choose CSV File"}
           </label>
           <input
@@ -90,41 +90,43 @@ const BulkCSVUpload = memo(function BulkCSVUpload({ fetchArtworks }) {
             required
             className="hidden"
           />
-          {csvFile && <span className="ml-3 text-gray-700">{csvFile.name}</span>}
+          {csvFile && <span className="ml-3 text-gray-300">{csvFile.name}</span>}
         </div>
         <button
           type="submit"
           disabled={!csvFile || uploading}
-          className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:opacity-60"
+          className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors disabled:opacity-60 text-sm font-medium"
         >
           {uploading ? "Uploading..." : "Upload CSV"}
         </button>
       </form>
-      {error && <div className="text-red-500 mt-2">{error}</div>}
+      {error && <div className="text-[#ff6b6b] mt-3">{error}</div>}
       {results && (
-        <div className="mt-4">
-          <h3 className="font-semibold mb-1">Upload Results:</h3>
-          <table className="min-w-full bg-gray-50 rounded">
-            <thead>
-              <tr>
-                <th className="px-2 py-1">Artwork Code</th>
-                <th className="px-2 py-1">Status</th>
-                <th className="px-2 py-1">Error</th>
-              </tr>
-            </thead>
-            <tbody>
-              {results.map((r, i) => (
-                <tr key={i}>
-                  <td className="px-2 py-1">{r.artworkCode}</td>
-                  <td className="px-2 py-1">{r.success ? "✅ Success" : "❌ Failed"}</td>
-                  <td className="px-2 py-1 text-red-600">{r.error || ""}</td>
+        <div className="mt-5">
+          <h3 className="font-medium mb-3 text-gray-300">Upload Results:</h3>
+          <div className="bg-[#2a2a2a] rounded-md overflow-hidden">
+            <table className="min-w-full">
+              <thead>
+                <tr className="border-b border-gray-600">
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Artwork Code</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Title</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {results.map((r, i) => (
+                  <tr key={i} className="border-t border-gray-600">
+                    <td className="px-4 py-2 text-sm text-gray-300">{r.artworkCode}</td>
+                    <td className="px-4 py-2 text-sm text-gray-300">{r.title}</td>
+                    <td className="px-4 py-2 text-sm">{r.success ? <span className="text-green-400">✅ Success</span> : <span className="text-[#ff6b6b]">❌ Failed</span>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
-      <div className="text-xs text-gray-500 mt-2">
+      <div className="text-xs text-gray-400 mt-4">
         CSV columns: title, description, category, artistName, artworkCode, imageUrl, orderWithinCategory
       </div>
     </div>
@@ -244,149 +246,153 @@ export default function ManageArtworksPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-6">Manage Artworks</h1>
-      <div className="flex gap-4 mb-6">
-        <button
-          className={`px-4 py-2 rounded font-semibold ${showAdd ? 'bg-gray-300' : 'bg-purple-600 text-white hover:bg-purple-700'}`}
-          onClick={() => setShowAdd(false)}
-        >
-          Manage Existing Artworks
-        </button>
-        <button
-          className={`px-4 py-2 rounded font-semibold ${showAdd ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-gray-300'}`}
-          onClick={() => setShowAdd(true)}
-        >
-          Add New Artwork
-        </button>
-      </div>
-      {showAdd ? (
-        <div>
-          <form onSubmit={handleAdd} className="mb-8 space-y-4 p-4 bg-white dark:bg-gray-800 rounded shadow">
-            <div>
-              <label className="block mb-1 font-medium">Title</label>
-              <input type="text" className="w-full p-2 border rounded" value={form.title} required onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block mb-1 font-medium">Description</label>
-              <textarea className="w-full p-2 border rounded" value={form.description} required onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block mb-1 font-medium">Category</label>
-              <select className="w-full p-2 border rounded" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
-                {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block mb-1 font-medium">Artist Name</label>
-              <input type="text" className="w-full p-2 border rounded" value={form.artistName} required onChange={e => setForm(f => ({ ...f, artistName: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block mb-1 font-medium">Artwork Code</label>
-              <input type="text" className="w-full p-2 border rounded" value={form.artworkCode} required onChange={e => setForm(f => ({ ...f, artworkCode: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block mb-1 font-medium">Image URL</label>
-              <input type="text" className="w-full p-2 border rounded" value={form.imageUrl} required onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block mb-1 font-medium">Order Within Category</label>
-              <input type="number" className="w-full p-2 border rounded" value={form.orderWithinCategory} min={0} required onChange={e => setForm(f => ({ ...f, orderWithinCategory: Number(e.target.value) }))} />
-            </div>
-            {error && <div className="text-red-500">{error}</div>}
-            {success && <div className="text-green-600">{success}</div>}
-            <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Add Artwork</button>
-          </form>
+    <div className="min-h-screen bg-black text-white px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">Manage Artworks</h1>
+        <div className="flex gap-4 mb-6">
+          <button
+            className={`px-4 py-2 rounded-md font-medium text-sm ${showAdd ? 'bg-gray-700 text-gray-300' : 'bg-[#93233B] text-white hover:bg-[#7a1d31] transition-colors'}`}
+            onClick={() => setShowAdd(false)}
+          >
+            Manage Existing Artworks
+          </button>
+          <button
+            className={`px-4 py-2 rounded-md font-medium text-sm ${showAdd ? 'bg-[#93233B] text-white hover:bg-[#7a1d31] transition-colors' : 'bg-gray-700 text-gray-300'}`}
+            onClick={() => setShowAdd(true)}
+          >
+            Add New Artwork
+          </button>
         </div>
-      ) : (
-        <div>
-          <BulkCSVUpload fetchArtworks={fetchArtworks} />
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white dark:bg-gray-800 rounded shadow">
-              <thead>
-                <tr>
-                  <th className="px-3 py-2">Title</th>
-                  <th className="px-3 py-2">Category</th>
-                  <th className="px-3 py-2">Artist</th>
-                  <th className="px-3 py-2">Artwork Code</th>
-                  <th className="px-3 py-2">Order</th>
-                  <th className="px-3 py-2">Image</th>
-                  <th className="px-3 py-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  Array.from({ length: 4 }).map((_, i) => (
-                    <tr key={i} className="animate-pulse">
-                      <td className="px-3 py-2"><div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded" /></td>
-                      <td className="px-3 py-2"><div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded" /></td>
-                      <td className="px-3 py-2"><div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded" /></td>
-                      <td className="px-3 py-2"><div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded" /></td>
-                      <td className="px-3 py-2"><div className="w-12 h-4 bg-gray-200 dark:bg-gray-700 rounded" /></td>
-                      <td className="px-3 py-2"><div className="w-16 h-8 bg-gray-200 dark:bg-gray-700 rounded" /></td>
-                      <td className="px-3 py-2"><div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded" /></td>
-                    </tr>
-                  ))
-                ) : (
-                  CATEGORIES.filter(cat => !filterCategory || cat === filterCategory).map(cat => (
-                    <Fragment key={cat}>
-                      {groupedArtworks[cat].length > 0 && (
-                        <tr key={cat + "-header"} className="bg-gray-100 dark:bg-gray-700">
-                          <td colSpan={7} className="font-bold py-2">{cat}</td>
-                        </tr>
-                      )}
-                      {groupedArtworks[cat].map((a, idx, arr) => (
-                        <tr key={a._id} className="border-t border-gray-200 dark:border-gray-700">
-                          <td className="px-3 py-2">{a.title}</td>
-                          <td className="px-3 py-2">{a.category}</td>
-                          <td className="px-3 py-2">{a.artistName}</td>
-                          <td className="px-3 py-2">{a.artworkCode}</td>
-                          <td className="px-3 py-2">
-                            <input
-                              type="number"
-                              className={`w-16 border rounded mr-2 ${editedOrders[a._id] !== undefined && editedOrders[a._id] !== a.orderWithinCategory ? 'border-yellow-500' : ''}`}
-                              value={editedOrders[a._id] !== undefined ? editedOrders[a._id] : a.orderWithinCategory}
-                              min={0}
-                              onChange={e => handleOrderChange(a._id, Number(e.target.value))}
-                            />
-                            <button
-                              className="px-2 text-lg font-bold text-gray-600 hover:text-purple-700"
-                              disabled={idx === 0}
-                              title="Move Up"
-                              onClick={() => swapOrder(a, arr[idx - 1])}
-                            >↑</button>
-                            <button
-                              className="px-2 text-lg font-bold text-gray-600 hover:text-purple-700"
-                              disabled={idx === arr.length - 1}
-                              title="Move Down"
-                              onClick={() => swapOrder(a, arr[idx + 1])}
-                            >↓</button>
-                          </td>
-                          <td className="px-3 py-2">
-                            <ArtPreview url={a.imageUrl} title={a.title} size={64} />
-                          </td>
-                          <td className="px-3 py-2">-</td>
-                        </tr>
-                      ))}
-                    </Fragment>
-                  ))
-                )}
-              </tbody>
-            </table>
+        {showAdd ? (
+          <div>
+            <form onSubmit={handleAdd} className="mb-8 space-y-4 p-6 bg-[#1e1e1e] rounded-lg shadow-lg">
+              <div>
+                <label className="block mb-2 font-medium text-gray-300">Title</label>
+                <input type="text" className="w-full px-4 py-2 bg-[#1e1e1e] border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]" value={form.title} required onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block mb-2 font-medium text-gray-300">Description</label>
+                <textarea className="w-full px-4 py-2 bg-[#1e1e1e] border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]" value={form.description} required onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block mb-2 font-medium text-gray-300">Category</label>
+                <select className="w-full p-2 bg-[#1e1e1e] border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
+                  {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block mb-2 font-medium text-gray-300">Artist Name</label>
+                <input type="text" className="w-full px-4 py-2 bg-[#1e1e1e] border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]" value={form.artistName} required onChange={e => setForm(f => ({ ...f, artistName: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block mb-2 font-medium text-gray-300">Artwork Code</label>
+                <input type="text" className="w-full px-4 py-2 bg-[#1e1e1e] border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]" value={form.artworkCode} required onChange={e => setForm(f => ({ ...f, artworkCode: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block mb-2 font-medium text-gray-300">Image URL</label>
+                <input type="text" className="w-full px-4 py-2 bg-[#1e1e1e] border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]" value={form.imageUrl} required onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block mb-2 font-medium text-gray-300">Order Within Category</label>
+                <input type="number" className="w-full px-4 py-2 bg-[#1e1e1e] border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]" value={form.orderWithinCategory} min={0} required onChange={e => setForm(f => ({ ...f, orderWithinCategory: Number(e.target.value) }))} />
+              </div>
+              {error && <div className="text-[#ff6b6b] mt-2">{error}</div>}
+              {success && <div className="text-green-400 mt-2">{success}</div>}
+              <button type="submit" className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors text-sm font-medium">Add Artwork</button>
+            </form>
           </div>
-          {Object.keys(editedOrders).length > 0 && (
-            <div className="mt-4 flex justify-end">
-              <button
-                type="button"
-                className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-semibold"
-                onClick={handleSaveOrders}
-              >
-                Save
-              </button>
+        ) : (
+          <div>
+            <BulkCSVUpload fetchArtworks={fetchArtworks} />
+            <div className="overflow-x-auto">
+              <div className="bg-[#1e1e1e] rounded-lg shadow-lg p-6">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b border-gray-600">
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Title</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Category</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Artist</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Artwork Code</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Order</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Image</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      Array.from({ length: 4 }).map((_, i) => (
+                        <tr key={i} className="animate-pulse border-t border-gray-700">
+                          <td className="px-4 py-3"><div className="w-20 h-4 bg-gray-700 rounded" /></td>
+                          <td className="px-4 py-3"><div className="w-16 h-4 bg-gray-700 rounded" /></td>
+                          <td className="px-4 py-3"><div className="w-24 h-4 bg-gray-700 rounded" /></td>
+                          <td className="px-4 py-3"><div className="w-24 h-4 bg-gray-700 rounded" /></td>
+                          <td className="px-4 py-3"><div className="w-12 h-4 bg-gray-700 rounded" /></td>
+                          <td className="px-4 py-3"><div className="w-16 h-8 bg-gray-700 rounded" /></td>
+                          <td className="px-4 py-3"><div className="w-16 h-4 bg-gray-700 rounded" /></td>
+                        </tr>
+                      ))
+                    ) : (
+                      CATEGORIES.filter(cat => !filterCategory || cat === filterCategory).map(cat => (
+                        <Fragment key={cat}>
+                          {groupedArtworks[cat].length > 0 && (
+                            <tr key={cat + "-header"} className="bg-[#1e1e1e]">
+                              <td colSpan={7} className="font-bold py-2 px-4 text-[#93233B]">{cat}</td>
+                            </tr>
+                          )}
+                          {groupedArtworks[cat].map((a, idx, arr) => (
+                            <tr key={a._id} className="border-t border-gray-600 hover:bg-[#1e1e1e]">
+                              <td className="px-4 py-3 font-medium text-white">{a.title}</td>
+                              <td className="px-4 py-3 text-gray-300">{a.category}</td>
+                              <td className="px-4 py-3 text-gray-300">{a.artistName}</td>
+                              <td className="px-4 py-3 text-gray-300">{a.artworkCode}</td>
+                              <td className="px-4 py-3">
+                                <input
+                                  type="number"
+                                  className={`w-16 bg-[#1e1e1e] border border-gray-600 rounded-md mr-2 text-white focus:outline-none focus:ring-2 focus:ring-[#93233B] ${editedOrders[a._id] !== undefined && editedOrders[a._id] !== a.orderWithinCategory ? 'border-yellow-500' : ''}`}
+                                  value={editedOrders[a._id] !== undefined ? editedOrders[a._id] : a.orderWithinCategory}
+                                  min={0}
+                                  onChange={e => handleOrderChange(a._id, Number(e.target.value))}
+                                />
+                                <button
+                                  className="px-2 text-lg font-bold text-gray-400 hover:text-[#93233B] transition-colors"
+                                  disabled={idx === 0}
+                                  title="Move Up"
+                                  onClick={() => swapOrder(a, arr[idx - 1])}
+                                >↑</button>
+                                <button
+                                  className="px-2 text-lg font-bold text-gray-400 hover:text-[#93233B] transition-colors"
+                                  disabled={idx === arr.length - 1}
+                                  title="Move Down"
+                                  onClick={() => swapOrder(a, arr[idx + 1])}
+                                >↓</button>
+                              </td>
+                              <td className="px-4 py-3">
+                                <ArtPreview url={a.imageUrl} title={a.title} size={64} />
+                              </td>
+                              <td className="px-4 py-3 text-gray-400">-</td>
+                            </tr>
+                          ))}
+                        </Fragment>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          )}
-        </div>
-      )}
+            {Object.keys(editedOrders).length > 0 && (
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  className="bg-[#93233B] text-white px-6 py-2 rounded-md hover:bg-[#7a1d31] transition-colors font-medium text-sm"
+                  onClick={handleSaveOrders}
+                >
+                  Save
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

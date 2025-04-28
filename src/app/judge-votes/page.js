@@ -62,19 +62,20 @@ export default function JudgeVotesPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-center">My Votes</h1>
+    <div className="min-h-screen bg-black text-white px-4 py-8">
+      <div className="max-w-7xl mx-auto">
+      <h1 className="text-3xl font-bold mb-8 text-center text-white">My Votes</h1>
       {loading ? (
         <div>
           {Array.from({ length: 2 }).map((_, cidx) => (
             <div key={cidx} className="mb-10">
-              <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-4 animate-pulse" />
+              <div className="h-6 w-32 bg-[#121212] rounded mb-4 animate-pulse" />
               <div className="overflow-x-auto">
-                <table className="min-w-full bg-white dark:bg-gray-800 rounded shadow">
+                <table className="min-w-full rounded overflow-hidden">
                   <thead>
                     <tr>
                       {["Artwork", "Artist", "Total Score", "Scores", "Comment"].map(h => (
-                        <th key={h} className="px-3 py-2"><div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded" /></th>
+                        <th key={h} className="px-3 py-2"><div className="h-4 w-20 bg-[#2a2a2a] rounded" /></th>
                       ))}
                     </tr>
                   </thead>
@@ -82,67 +83,70 @@ export default function JudgeVotesPage() {
                     {Array.from({ length: 3 }).map((_, i) => (
                       <tr key={i} className="animate-pulse">
                         {Array.from({ length: 5 }).map((_, j) => (
-                          <td key={j} className="px-3 py-2"><div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded" /></td>
+                          <td key={j} className="px-3 py-2"><div className="h-4 w-full bg-[#2a2a2a] rounded" /></td>
                         ))}
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                <div className="h-3 w-40 bg-gray-200 dark:bg-gray-700 rounded mt-2 animate-pulse" />
+                <div className="h-3 w-40 bg-[#2a2a2a] rounded mt-2 animate-pulse" />
               </div>
             </div>
           ))}
         </div>
       ) : Object.keys(votesByCategory).length === 0 ? (
-        <div className="text-center text-gray-500">You have not voted on any artworks yet.</div>
+        <div className="text-center text-gray-400">You have not voted on any artworks yet.</div>
       ) : (
         Object.entries(votesByCategory).map(([category, votes]) => (
-          <div key={category} className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4 text-purple-700">{category}</h2>
+          <div key={category} className="mb-10 bg-[#1e1e1e] rounded-lg shadow-lg p-6">
+            <h2 className="text-2xl font-semibold mb-6 text-[#93233B] border-b border-gray-800 pb-3">{category}</h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full bg-white dark:bg-gray-800 rounded shadow">
-                <thead>
+              <table className="min-w-full rounded overflow-hidden">
+                <thead className="bg-[#2a2a2a] border-b border-gray-800">
                   <tr>
-                    <th className="px-3 py-2">Artwork</th>
-                    <th className="px-3 py-2">Artist</th>
-                    <th className="px-3 py-2">Total Score</th>
-                    <th className="px-3 py-2">Scores</th>
-                    <th className="px-3 py-2">Comment</th>
+                    <th className="px-4 py-3 text-white text-left">Artwork</th>
+                    <th className="px-4 py-3 text-white text-left">Artist</th>
+                    <th className="px-4 py-3 text-white text-left">Total Score</th>
+                    <th className="px-4 py-3 text-white text-left">Scores</th>
+                    <th className="px-4 py-3 text-white text-left">Comment</th>
                   </tr>
                 </thead>
                 <tbody>
                   {votes.map((vote, idx) => {
   const art = getArtwork(vote.artworkId);
   let rowClass = '';
-  if (idx === 0) rowClass = 'bg-yellow-200 dark:bg-yellow-900'; // Gold
-  else if (idx === 1) rowClass = 'bg-gray-200 dark:bg-gray-700'; // Silver
-  else if (idx === 2) rowClass = 'bg-orange-200 dark:bg-orange-900'; // Bronze
+  if (idx === 0) rowClass = 'border-l-4 border-yellow-500 bg-yellow-900 bg-opacity-20'; // Gold
+  else if (idx === 1) rowClass = 'border-l-4 border-gray-500 bg-gray-700 bg-opacity-20'; // Silver
+  else if (idx === 2) rowClass = 'border-l-4 border-orange-500 bg-orange-900 bg-opacity-20'; // Bronze
   return (
     <tr key={vote._id} className={rowClass}>
-                        <td className="px-3 py-2 font-semibold">{art ? art.title : "Unknown"}</td>
-                        <td className="px-3 py-2">{art ? art.artistName : "-"}</td>
-                        <td className="px-3 py-2 font-bold">{totalScore(vote.scores)}</td>
-                        <td className="px-3 py-2">
-                          <span className="inline-block mr-2">Technique & Execution: {vote.scores.techniqueExecution}</span>
-                          <span className="inline-block mr-2">Creativity & Originality: {vote.scores.creativityOriginality}</span>
-                          <span className="inline-block mr-2">Concept / Message: {vote.scores.conceptMessage}</span>
-                          <span className="inline-block mr-2">Aesthetic Impact: {vote.scores.aestheticImpact}</span>
+                        <td className="px-4 py-3 font-semibold">{art ? art.title : "Unknown"}</td>
+                        <td className="px-4 py-3 text-gray-300">{art ? art.artistName : "-"}</td>
+                        <td className="px-4 py-3 font-bold text-[#93233B]">{totalScore(vote.scores)}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col space-y-1">
+                            <span className="text-sm"><span className="text-gray-400">Technique & Execution:</span> {vote.scores.techniqueExecution}</span>
+                            <span className="text-sm"><span className="text-gray-400">Creativity & Originality:</span> {vote.scores.creativityOriginality}</span>
+                            <span className="text-sm"><span className="text-gray-400">Concept / Message:</span> {vote.scores.conceptMessage}</span>
+                            <span className="text-sm"><span className="text-gray-400">Aesthetic Impact:</span> {vote.scores.aestheticImpact}</span>
+                          </div>
                         </td>
-                        <td className="px-3 py-2">{vote.comment || "-"}</td>
+                        <td className="px-4 py-3 text-gray-300">{vote.comment || "-"}</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
-              <div className="text-xs text-gray-500 mt-2">
-  <span className="inline-block mr-2"><span className="inline-block w-3 h-3 rounded-full bg-yellow-400 mr-1 align-middle"></span>1st Place</span>
-  <span className="inline-block mr-2"><span className="inline-block w-3 h-3 rounded-full bg-gray-400 mr-1 align-middle"></span>2nd Place</span>
-  <span className="inline-block mr-2"><span className="inline-block w-3 h-3 rounded-full bg-orange-400 mr-1 align-middle"></span>3rd Place</span>
-</div>
+              <div className="text-xs text-gray-400 mt-4 bg-[#2a2a2a] p-3 rounded-md inline-block">
+                <span className="inline-block mr-3"><span className="inline-block w-3 h-3 rounded-full bg-yellow-500 mr-1 align-middle"></span>1st Place</span>
+                <span className="inline-block mr-3"><span className="inline-block w-3 h-3 rounded-full bg-gray-500 mr-1 align-middle"></span>2nd Place</span>
+                <span className="inline-block mr-3"><span className="inline-block w-3 h-3 rounded-full bg-orange-500 mr-1 align-middle"></span>3rd Place</span>
+              </div>
             </div>
           </div>
         ))
       )}
+      </div>
     </div>
   );
 }

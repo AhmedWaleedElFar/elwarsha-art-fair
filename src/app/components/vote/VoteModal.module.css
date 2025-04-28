@@ -1,0 +1,69 @@
+/* Custom Range Input Styling */
+.customRange {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #2a2a2a;
+  border-radius: 4px;
+  outline: none;
+  margin: 12px 0;
+  position: relative;
+}
+
+/* Thumb (the circle you drag) */
+.customRange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #93233B;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  margin-top: -5px; /* Center the thumb vertically */
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+.customRange::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #93233B;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Track (the line) */
+.customRange::-webkit-slider-runnable-track {
+  height: 8px;
+  background: linear-gradient(to right, #93233B 0%, #93233B var(--range-progress, 50%), #2a2a2a var(--range-progress, 50%), #2a2a2a 100%);
+  border-radius: 4px;
+}
+
+.customRange::-moz-range-track {
+  height: 8px;
+  background: #2a2a2a;
+  border-radius: 4px;
+}
+
+/* Fill effect for Firefox */
+.customRange::-moz-range-progress {
+  height: 8px;
+  background: #93233B;
+  border-radius: 4px;
+}
+
+/* Focus state */
+.customRange:focus {
+  outline: none;
+}
+
+.customRange:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(147, 35, 59, 0.3);
+}
+
+.customRange:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 3px rgba(147, 35, 59, 0.3);
+}
