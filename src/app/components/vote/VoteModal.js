@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import styles from './VoteModal.module.css';
 import dynamic from 'next/dynamic';
+import LoadingButton from '@/app/components/ui/LoadingButton';
 const PdfImagePreview = dynamic(() => import('../PdfImagePreview'), { ssr: false });
 
 export default function VoteModal({ artwork, open, onClose, onSubmit, previousVote }) {
@@ -140,13 +141,13 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
                 />
               </div>
               {error && <div className="text-[#ff6b6b] text-sm">{error}</div>}
-              <button
+              <LoadingButton
                 type="submit"
-                disabled={submitting}
+                isLoading={submitting}
                 className="w-full bg-[#93233B] hover:bg-[#7a1d31] text-white font-semibold py-2 rounded-md disabled:opacity-60 transition-colors"
               >
-                {submitting ? 'Submitting...' : 'Submit Vote'}
-              </button>
+                Submit Vote
+              </LoadingButton>
             </form>
           </div>
         </div>

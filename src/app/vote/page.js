@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, memo } from 'react';
 import VoteModal from '../components/vote/VoteModal';
+import LoadingLink from '@/app/components/ui/LoadingLink';
 
 function isGoogleDriveLink(url) {
   return url?.includes('drive.google.com');
@@ -136,39 +137,70 @@ export default function VotePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center text-white">Vote for Artworks</h1>
+    <div className="min-h-screen bg-black text-white p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold mb-4 text-center text-white">Welcome, {session?.user?.firstName || session?.user?.name || 'Judge'}</h1>
+        <h2 className="text-xl text-center text-gray-300 mb-8">Vote on Artworks</h2>
+        
+        <div className="flex items-center justify-between mb-6">
+          <LoadingLink 
+            href="/" 
+            onClick={(e) => {
+              if (window.location.pathname === '/') {
+                e.preventDefault();
+              }
+            }}
+            className="text-gray-300 hover:text-[#93233B] transition-colors font-medium px-3 py-2 rounded-md hover:bg-[#2a2a2a] flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+            </svg>
+            Home
+          </LoadingLink>
+          <LoadingLink 
+            href="/judge-votes" 
+            onClick={(e) => {
+              if (window.location.pathname === '/judge-votes') {
+                e.preventDefault();
+              }
+            }}
+            className="text-gray-300 hover:text-[#93233B] transition-colors font-medium px-3 py-2 rounded-md hover:bg-[#2a2a2a] flex items-center">
+            My Votes
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </LoadingLink>
+        </div>
 
-      {/* Category Selector for Judges with Multiple Categories */}
-      {session && session.user?.categories && session.user.categories.length > 1 && (
-        <div className="mb-6 flex justify-center">
-          <label className="mr-2 font-semibold text-gray-300">Category:</label>
-          <select
-            className="p-2 bg-[#1e1e1e] border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]"
-            value={selectedCategory}
-            onChange={e => setSelectedCategory(e.target.value)}
-          >
-            {session.user.categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
+        {/* Category Selector for Judges with Multiple Categories */}
+        {session && session.user?.categories && session.user.categories.length > 1 && (
+          <div className="mb-6 flex justify-center">
+            <label className="mr-2 font-semibold text-gray-300">Category:</label>
+            <select
+              className="p-2 bg-[#1e1e1e] border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]"
+              value={selectedCategory}
+              onChange={e => setSelectedCategory(e.target.value)}
+            >
+              {session.user.categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        {/* Gallery */}
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-[#1e1e1e] rounded-lg shadow-lg p-4 flex flex-col items-center animate-pulse">
+                <div className="w-48 h-48 bg-[#2a2a2a] rounded mb-4" />
+                <div className="h-5 w-32 bg-[#2a2a2a] rounded mb-2" />
+                <div className="h-4 w-24 bg-[#2a2a2a] rounded mb-1" />
+                <div className="h-3 w-20 bg-[#2a2a2a] rounded mb-2" />
+                <div className="h-10 w-32 bg-[#2a2a2a] rounded mt-auto" />
+              </div>
             ))}
-          </select>
-        </div>
-      )}
-      {/* Gallery */}
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-[#1e1e1e] rounded-lg shadow-lg p-4 flex flex-col items-center animate-pulse">
-              <div className="w-48 h-48 bg-[#2a2a2a] rounded mb-4" />
-              <div className="h-5 w-32 bg-[#2a2a2a] rounded mb-2" />
-              <div className="h-4 w-24 bg-[#2a2a2a] rounded mb-1" />
-              <div className="h-3 w-20 bg-[#2a2a2a] rounded mb-2" />
-              <div className="h-10 w-32 bg-[#2a2a2a] rounded mt-auto" />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {artworks.filter(a => a.category === selectedCategory).length === 0 ? (
             <div className="col-span-full text-center text-gray-400">No artworks found.</div>
           ) : (
@@ -255,6 +287,7 @@ export default function VotePage() {
           }
         }}
       />
+      </div>
     </div>
   );
 }

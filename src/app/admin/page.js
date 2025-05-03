@@ -129,18 +129,26 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-black text-white px-4 py-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <div className="flex justify-between mb-6">
+          <button
+            onClick={() => router.push('/')}
+            className="text-gray-300 hover:text-[#93233B] transition-colors font-medium px-3 py-2 rounded-md hover:bg-[#2a2a2a] flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+            </svg>
+            Home
+          </button>
           <div className="flex gap-4">
             <button
               onClick={() => router.push('/admin/artworks')}
-              className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors font-medium text-sm"
+              className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors text-sm font-medium"
             >
               Manage Artworks
             </button>
             <button
               onClick={() => router.push('/admin/judges')}
-              className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors font-medium text-sm"
+              className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors text-sm font-medium"
             >
               Manage Judges
             </button>

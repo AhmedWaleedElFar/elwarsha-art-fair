@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import LoadingButton from '@/app/components/ui/LoadingButton';
 import styles from '../components/login/login.module.css';
 
 export default function LoginPage() {
@@ -118,13 +119,13 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <button
+            <LoadingButton
               type="submit"
-              disabled={loading}
+              isLoading={loading}
               className="group relative flex w-full justify-center rounded-md bg-[#93233B] px-3 py-2 text-sm font-semibold text-white hover:bg-[#7a1d31] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#93233B] disabled:bg-[#93233B]/50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
+              Sign in
+            </LoadingButton>
           </div>
         </form>
       </div>

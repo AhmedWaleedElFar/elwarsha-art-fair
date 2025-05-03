@@ -15,11 +15,16 @@ export const authOptions = {
       },
       async authorize(credentials) {
         try {
+          console.log('Authorizing with credentials:', { username: credentials.username });
           await connectDB();
+          
           // Try admin first
+          console.log('Checking admin credentials...');
           const admin = await Admin.findOne({ username: credentials.username }).lean();
           if (admin) {
+            console.log('Admin found, checking password...');
             const isValid = await bcrypt.compare(credentials.password, admin.password);
+            console.log('Admin password valid:', isValid);
             if (!isValid) return null;
             return {
               id: admin._id.toString(),
@@ -28,22 +33,37 @@ export const authOptions = {
               role: 'admin',
             };
           }
+          
           // Try judge
+          console.log('Checking judge credentials...');
           const judge = await Judge.findOne({ username: credentials.username }).lean();
+          console.log('Judge found:', judge ? 'Yes' : 'No');
+          
           if (judge) {
+            console.log('Judge password from DB (first 5 chars):', judge.password.substring(0, 5));
+            console.log('Comparing passwords...');
             const isValid = await bcrypt.compare(credentials.password, judge.password);
+            console.log('Judge password valid:', isValid);
+            
             if (!isValid) return null;
-            return {
+            
+            const userData = {
               id: judge._id.toString(),
               username: judge.username,
+              firstName: judge.firstName || '',
               name: judge.name,
               role: 'judge',
               categories: judge.categories,
             };
+            
+            console.log('Returning judge user data:', userData);
+            return userData;
           }
+          
+          console.log('No user found with username:', credentials.username);
           return null; // No user found
         } catch (error) {
-          console.error(error);
+          console.error('Error in authorize function:', error);
           return null;
         }
       }
