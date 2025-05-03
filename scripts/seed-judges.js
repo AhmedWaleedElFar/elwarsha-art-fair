@@ -13,13 +13,13 @@ async function seed() {
 
   const judges = [
     {
-      email: 'judge1@elwarsha.com',
+      username: 'judge1',
       password: 'judgepass',
       name: 'Judge One',
       categories: ['Photography', 'Digital Painting'],
     },
     {
-      email: 'judge2@elwarsha.com',
+      username: 'judge2',
       password: 'judgepass',
       name: 'Judge Two',
       categories: ['Photography'],
@@ -27,12 +27,12 @@ async function seed() {
   ];
 
   for (const judge of judges) {
-    const exists = await Judge.findOne({ email: judge.email });
+    const exists = await Judge.findOne({ username: judge.username });
     if (!exists) {
       await Judge.create(judge);
-      console.log(`Seeded: ${judge.email}`);
+      console.log(`Seeded: ${judge.username}`);
     } else {
-      console.log(`Already exists: ${judge.email}`);
+      console.log(`Already exists: ${judge.username}`);
     }
   }
 

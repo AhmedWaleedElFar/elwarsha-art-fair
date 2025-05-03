@@ -10,32 +10,32 @@ export const authOptions = {
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: "Email", type: "email" },
+        username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
         try {
           await connectDB();
-          // Try admin first (case-insensitive)
-          const admin = await Admin.findOne({ email: { $regex: `^${credentials.email}$`, $options: 'i' } }).lean();
+          // Try admin first
+          const admin = await Admin.findOne({ username: credentials.username }).lean();
           if (admin) {
             const isValid = await bcrypt.compare(credentials.password, admin.password);
             if (!isValid) return null;
             return {
               id: admin._id.toString(),
-              email: admin.email,
+              username: admin.username,
               name: admin.name,
               role: 'admin',
             };
           }
-          // Try judge (case-insensitive)
-          const judge = await Judge.findOne({ email: { $regex: `^${credentials.email}$`, $options: 'i' } }).lean();
+          // Try judge
+          const judge = await Judge.findOne({ username: credentials.username }).lean();
           if (judge) {
             const isValid = await bcrypt.compare(credentials.password, judge.password);
             if (!isValid) return null;
             return {
               id: judge._id.toString(),
-              email: judge.email,
+              username: judge.username,
               name: judge.name,
               role: 'judge',
               categories: judge.categories,

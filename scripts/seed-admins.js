@@ -12,21 +12,21 @@ async function seed() {
 
   const admins = [
     {
-      email: 'admin@elwarsha.com',
+      username: 'admin',
       password: 'adminpass',
       name: 'Admin User',
     },
   ];
 
   for (const admin of admins) {
-    const exists = await Admin.findOne({ email: admin.email });
+    const exists = await Admin.findOne({ username: admin.username });
     if (!exists) {
       await Admin.create({
         ...admin
       });
-      console.log(`Seeded admin: ${admin.email}`);
+      console.log(`Seeded admin: ${admin.username}`);
     } else {
-      console.log(`Admin already exists: ${admin.email}`);
+      console.log(`Admin already exists: ${admin.username}`);
     }
   }
 

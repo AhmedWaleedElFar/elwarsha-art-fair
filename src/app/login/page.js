@@ -29,18 +29,18 @@ export default function LoginPage() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email');
+    const username = formData.get('username');
     const password = formData.get('password');
 
     try {
       const result = await signIn('credentials', {
-        email,
+        username,
         password,
         redirect: false,
       });
 
       if (result?.error) {
-        setError('Invalid email or password');
+        setError('Invalid username or password');
       } else {
         // Fetch the session and redirect to the correct dashboard
         const { getSession } = await import('next-auth/react');
@@ -88,17 +88,17 @@ export default function LoginPage() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="-space-y-px rounded-md shadow-sm">
             <div>
-              <label htmlFor="email-address" className="sr-only">
-                Email address
+              <label htmlFor="username" className="sr-only">
+                Username
               </label>
               <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
+                id="username"
+                name="username"
+                type="text"
+                autoComplete="username"
                 required
                 className={`relative block w-full rounded-t-md border-0 py-2 px-4 text-white ring-1 ring-inset ring-gray-700 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-[#93233B] focus:border-[#93233B] focus:outline-none transition-colors sm:text-sm sm:leading-6 bg-[#2a2a2a] ${styles.loginInput}`}
-                placeholder="Email address"
+                placeholder="Username"
               />
             </div>
             <div>
