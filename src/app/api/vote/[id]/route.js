@@ -11,7 +11,7 @@ export async function PUT(req, { params }) {
     }
     
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
     const { scores, comment } = await req.json();
     
     // Find the vote

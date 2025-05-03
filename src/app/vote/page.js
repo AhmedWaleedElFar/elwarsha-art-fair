@@ -3,6 +3,8 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, memo } from 'react';
+import toast from 'react-hot-toast';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import VoteModal from '../components/vote/VoteModal';
 import LoadingLink from '@/app/components/ui/LoadingLink';
 
@@ -80,6 +82,7 @@ export default function VotePage() {
   const [loading, setLoading] = useState(true);
   const [selectedArtwork, setSelectedArtwork] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const [selectedCategory, setSelectedCategory] = useState('');
 
@@ -139,7 +142,7 @@ export default function VotePage() {
   return (
     <div className="min-h-screen bg-black text-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4 text-center text-white">Welcome, {session?.user?.firstName || session?.user?.name || 'Judge'}</h1>
+        <h1 className="text-3xl font-bold mb-4 text-center text-white">Welcome, {session?.user?.name || session?.user?.firstName || session?.user?.username}</h1>
         <h2 className="text-xl text-center text-gray-300 mb-8">Vote on Artworks</h2>
         
         <div className="flex items-center justify-between mb-6">
@@ -224,25 +227,7 @@ export default function VotePage() {
                 {votes.some(v => v.artworkId === artwork._id) && (
                   <button
                     className="mt-2 px-4 py-1 text-sm bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors"
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      const vote = votes.find(v => v.artworkId === artwork._id);
-                      if (!vote) return;
-                      if (confirm('Are you sure you want to delete your vote for this artwork?')) {
-                        const res = await fetch(`/api/vote/${vote._id}`, { method: 'DELETE' });
-                        let ok = res.ok;
-                        let data = {};
-                        try {
-                          data = await res.json();
-                        } catch {}
-                        if (ok && data.success) {
-                          setVotes(votes => votes.filter(v => v._id !== vote._id));
-                          alert('Vote deleted.');
-                        } else {
-                          alert('Failed to delete vote.');
-                        }
-                      }
-                    }}
+                    onClick={() => setConfirmDelete(votes.find(v => v.artworkId === artwork._id))}
                   >Delete Vote</button>
                 )}
               </div>
@@ -281,13 +266,43 @@ export default function VotePage() {
               }
             });
             setModalOpen(false);
-            alert('Vote submitted!');
+            toast.success('Vote submitted!');
           } catch (err) {
-            alert(err.message);
+            toast.error(err.message);
           }
         }}
       />
-      </div>
+      {/* Confirmation Modal for Vote Deletion */}
+      <ConfirmationModal 
+        isOpen={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={async () => {
+          if (!confirmDelete) return;
+          try {
+            const res = await fetch(`/api/vote/${confirmDelete._id}`, { method: 'DELETE' });
+            let ok = res.ok;
+            let data = {};
+            try {
+              data = await res.json();
+            } catch {}
+            if (ok && data.success) {
+              setVotes(votes => votes.filter(v => v._id !== confirmDelete._id));
+              toast.success('Vote deleted.');
+            } else {
+              toast.error('Failed to delete vote.');
+            }
+          } catch (error) {
+            toast.error('Error deleting vote.');
+          } finally {
+            setConfirmDelete(null);
+          }
+        }}
+        title="Delete Vote"
+        message="Are you sure you want to delete your vote for this artwork? This action cannot be undone."
+        confirmText="Delete Vote"
+        variant="danger"
+      />
     </div>
+  </div>
   );
 }

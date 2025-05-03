@@ -54,12 +54,17 @@ export default function Header() {
             )}
             {/* Show Sign Out if logged in */}
             {user && (
-              <button
-                onClick={() => signOut({ callbackUrl: '/' })}
-                className="text-gray-300 hover:text-[#93233B] transition-colors font-medium px-3 py-2 rounded-md hover:bg-[#2a2a2a]"
-              >
-                Sign Out
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="text-gray-300 hover:text-[#93233B] transition-colors font-medium px-3 py-2 rounded-md hover:bg-[#2a2a2a]"
+                >
+                  Sign Out
+                </button>
+                <span className="text-gray-400 text-sm">
+                  {user.name || user.firstName || user.username}
+                </span>
+              </div>
             )}
           </div>
         </div>
