@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf';
+import * as pdfjsLib from 'pdfjs-dist/webpack';
 
 // Required for pdfjs worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
