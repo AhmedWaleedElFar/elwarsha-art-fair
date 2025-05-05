@@ -1,7 +1,7 @@
 'use client';
 
+"use client";
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
 
 const NavigationContext = createContext({
   isNavigating: false,
