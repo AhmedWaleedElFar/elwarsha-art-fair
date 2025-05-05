@@ -25,8 +25,8 @@ export default function PdfImagePreview({ url, width = 300, height = 400 }) {
       setError('');
       try {
         if (typeof window === 'undefined') return;
-        pdfjsLib = await import('pdfjs-dist/build/pdf');
-        await import('pdfjs-dist/build/pdf.worker.entry');
+        pdfjsLib = await import('pdfjs-dist/legacy/build/pdf');
+await import('pdfjs-dist/legacy/build/pdf.worker.entry');
         // Google Drive proxy logic
         function getGoogleDriveFileId(url) {
           let match = url.match(/\/file\/d\/([^/]+)/);
