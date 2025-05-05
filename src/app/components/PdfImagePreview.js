@@ -5,6 +5,7 @@ export default function PdfImagePreview({ url, width = 300, height = 400 }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [canvasReady, setCanvasReady] = useState(false);
+  
 
   // Ref callback to detect when canvas is mounted
   const setCanvas = useCallback(node => {
