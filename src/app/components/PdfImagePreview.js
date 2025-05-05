@@ -1,15 +1,18 @@
+"use client";
+
 import { useEffect, useRef, useState, useLayoutEffect, useCallback } from 'react';
-import('pdfjs-dist/build/pdf.worker.entry');
+
+// Import the worker entry for pdfjs-dist (legacy version)
+import('pdfjs-dist/legacy/build/pdf.worker.entry');
 
 export default function PdfImagePreview({ url, width = 300, height = 400 }) {
   const canvasRef = useRef(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [canvasReady, setCanvasReady] = useState(false);
-  
 
   // Ref callback to detect when canvas is mounted
-  const setCanvas = useCallback(node => {
+  const setCanvas = useCallback((node) => {
     canvasRef.current = node;
     if (node) setCanvasReady(true);
   }, []);
@@ -25,9 +28,14 @@ export default function PdfImagePreview({ url, width = 300, height = 400 }) {
       setError('');
       try {
         if (typeof window === 'undefined') return;
+
+        // Import the pdfjs library (legacy version)
         pdfjsLib = await import('pdfjs-dist/legacy/build/pdf');
-await import('pdfjs-dist/legacy/build/pdf.worker.entry');
-        // Google Drive proxy logic
+        
+        // Worker setup (legacy worker)
+        await import('pdfjs-dist/legacy/build/pdf.worker.entry');
+        
+        // Google Drive proxy logic to handle PDF URL
         function getGoogleDriveFileId(url) {
           let match = url.match(/\/file\/d\/([^/]+)/);
           if (match) return match[1];
@@ -35,6 +43,7 @@ await import('pdfjs-dist/legacy/build/pdf.worker.entry');
           if (match) return match[1];
           return null;
         }
+        
         function getGoogleDriveProxyUrl(url) {
           const fileId = getGoogleDriveFileId(url);
           if (fileId) {
@@ -42,16 +51,22 @@ await import('pdfjs-dist/legacy/build/pdf.worker.entry');
           }
           return url;
         }
+
         const pdfUrl = getGoogleDriveProxyUrl(url);
-        //console.log('[PDF Preview] workerSrc:', workerSrc);
         console.log('[PDF Preview] pdfUrl:', pdfUrl);
+
+        // Load PDF document
         loadingTask = pdfjsLib.getDocument(pdfUrl);
         const pdf = await loadingTask.promise;
         console.log('[PDF Preview] PDF loaded successfully');
+        
+        // Get first page
         const page = await pdf.getPage(1);
         console.log('[PDF Preview] Page 1 loaded successfully');
+        
         const viewport = page.getViewport({ scale: 1 });
-        // Wait for canvas to be present
+
+        // Wait for canvas to be available
         let tries = 0;
         function waitForCanvasAndRender() {
           const canvas = canvasRef.current;
@@ -67,10 +82,12 @@ await import('pdfjs-dist/legacy/build/pdf.worker.entry');
             }
             return;
           }
-          // Scale to fit box
+          
+          // Scale to fit the box (aspect ratio adjustment)
           const scale = Math.min((width || viewport.width) / viewport.width, (height || viewport.height) / viewport.height);
           const scaledViewport = page.getViewport({ scale });
-          // Ensure integer dimensions
+
+          // Set canvas size
           canvas.width = Math.floor(scaledViewport.width);
           canvas.height = Math.floor(scaledViewport.height);
           canvas.style.width = `${Math.floor(width)}px`;
@@ -78,22 +95,27 @@ await import('pdfjs-dist/legacy/build/pdf.worker.entry');
 
           const context = canvas.getContext('2d');
           console.log('[PDF Preview] Canvas actual size:', canvas.width, canvas.height);
+
           if (!context) {
             console.error('[PDF Preview] Canvas context is null!');
             setError('Canvas context is null');
             setLoading(false);
             return;
           }
+
+          // Render page to canvas
           page.render({ canvasContext: context, viewport: scaledViewport }).promise.then(() => {
             console.log('[PDF Preview] Page rendered to canvas');
             if (!destroyed) setLoading(false);
-          }).catch(err => {
+          }).catch((err) => {
             console.error('[PDF Preview] Render error:', err);
             setError('Failed to render PDF: ' + (err && err.message ? err.message : String(err)));
             setLoading(false);
           });
         }
+
         waitForCanvasAndRender();
+
       } catch (err) {
         if (!destroyed) setError('Failed to render PDF: ' + (err && err.message ? err.message : String(err)));
         setLoading(false);
@@ -111,7 +133,8 @@ await import('pdfjs-dist/legacy/build/pdf.worker.entry');
     };
   }, [url, width, height, canvasReady]);
 
-  if (error) return <div className="text-red-500 text-xs" style={{whiteSpace:'pre-wrap'}}>{error}</div>;
+  if (error) return <div className="text-red-500 text-xs" style={{ whiteSpace: 'pre-wrap' }}>{error}</div>;
+  
   return (
     <canvas
       ref={setCanvas}
@@ -120,5 +143,3 @@ await import('pdfjs-dist/legacy/build/pdf.worker.entry');
     />
   );
 }
-
-
