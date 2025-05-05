@@ -129,18 +129,26 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-black text-white px-4 py-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <div className="flex justify-between mb-6">
+          <button
+            onClick={() => router.push('/')}
+            className="text-gray-300 hover:text-[#93233B] transition-colors font-medium px-3 py-2 rounded-md hover:bg-[#2a2a2a] flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+            </svg>
+            Home
+          </button>
           <div className="flex gap-4">
             <button
               onClick={() => router.push('/admin/artworks')}
-              className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors font-medium text-sm"
+              className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors text-sm font-medium"
             >
               Manage Artworks
             </button>
             <button
               onClick={() => router.push('/admin/judges')}
-              className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors font-medium text-sm"
+              className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors text-sm font-medium"
             >
               Manage Judges
             </button>
@@ -160,9 +168,9 @@ export default function AdminPage() {
                   ) : (
                     artworks.map((a, i) => {
                       let rowClass = '';
-                      if (i === 0) rowClass = 'bg-yellow-900 border-l-4 border-yellow-400'; // Gold
-                      else if (i === 1) rowClass = 'bg-gray-700 border-l-4 border-gray-400'; // Silver
-                      else if (i === 2) rowClass = 'bg-orange-900 border-l-4 border-orange-400'; // Bronze
+                      if (i === 0) rowClass = 'bg-yellow-500 border-l-4 border-yellow-500 bg-opacity-20'; // Gold
+                      else if (i === 1) rowClass = 'bg-gray-500 border-l-4 border-gray-500 bg-opacity-20'; // Silver
+                      else if (i === 2) rowClass = 'bg-orange-500 border-l-4 border-orange-500 bg-opacity-20'; // Bronze
                       return (
                         <li key={a._id} className={`flex flex-col rounded-md ${rowClass} p-3 mb-2`}>
                           <span className="font-medium text-white">{a.title}</span>

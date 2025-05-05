@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useState, memo, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import LoadingButton from "@/app/components/ui/LoadingButton";
 
 const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview'), { ssr: false });
 
@@ -92,13 +93,14 @@ const BulkCSVUpload = memo(function BulkCSVUpload({ fetchArtworks }) {
           />
           {csvFile && <span className="ml-3 text-gray-300">{csvFile.name}</span>}
         </div>
-        <button
+        <LoadingButton
           type="submit"
-          disabled={!csvFile || uploading}
+          isLoading={uploading}
+          disabled={!csvFile}
           className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors disabled:opacity-60 text-sm font-medium"
         >
-          {uploading ? "Uploading..." : "Upload CSV"}
-        </button>
+          Upload CSV
+        </LoadingButton>
       </form>
       {error && <div className="text-[#ff6b6b] mt-3">{error}</div>}
       {results && (
@@ -247,8 +249,37 @@ export default function ManageArtworksPage() {
 
   return (
     <div className="min-h-screen bg-black text-white px-4 py-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Manage Artworks</h1>
+        
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => {
+              if (window.location.pathname !== '/admin') {
+                router.push('/admin');
+              }
+            }}
+            className="text-gray-300 hover:text-[#93233B] transition-colors font-medium px-3 py-2 rounded-md hover:bg-[#2a2a2a] flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
+            Back to Dashboard
+          </button>
+          <button
+            onClick={() => {
+              if (window.location.pathname !== '/') {
+                router.push('/');
+              }
+            }}
+            className="text-gray-300 hover:text-[#93233B] transition-colors font-medium px-3 py-2 rounded-md hover:bg-[#2a2a2a] flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+            </svg>
+            Home
+          </button>
+        </div>
         <div className="flex gap-4 mb-6">
           <button
             className={`px-4 py-2 rounded-md font-medium text-sm ${showAdd ? 'bg-gray-700 text-gray-300' : 'bg-[#93233B] text-white hover:bg-[#7a1d31] transition-colors'}`}
@@ -298,7 +329,7 @@ export default function ManageArtworksPage() {
               </div>
               {error && <div className="text-[#ff6b6b] mt-2">{error}</div>}
               {success && <div className="text-green-400 mt-2">{success}</div>}
-              <button type="submit" className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors text-sm font-medium">Add Artwork</button>
+              <LoadingButton type="submit" className="bg-[#93233B] text-white px-4 py-2 rounded-md hover:bg-[#7a1d31] transition-colors text-sm font-medium">Add Artwork</LoadingButton>
             </form>
           </div>
         ) : (

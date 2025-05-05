@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import LoadingButton from '@/app/components/ui/LoadingButton';
 import styles from '../components/login/login.module.css';
 
 export default function LoginPage() {
@@ -85,47 +86,40 @@ export default function LoginPage() {
             <p className="text-sm text-red-400">{error}</p>
           </div>
         )}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="-space-y-px rounded-md shadow-sm">
-            <div>
-              <label htmlFor="username" className="sr-only">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                autoComplete="username"
-                required
-                className={`relative block w-full rounded-t-md border-0 py-2 px-4 text-white ring-1 ring-inset ring-gray-700 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-[#93233B] focus:border-[#93233B] focus:outline-none transition-colors sm:text-sm sm:leading-6 bg-[#2a2a2a] ${styles.loginInput}`}
-                placeholder="Username"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className={`relative block w-full rounded-b-md border-0 py-2 px-4 text-white ring-1 ring-inset ring-gray-700 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-[#93233B] focus:border-[#93233B] focus:outline-none transition-colors sm:text-sm sm:leading-6 bg-[#2a2a2a] ${styles.loginInput}`}
-                placeholder="Password"
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm mx-auto">
+          <div className="flex flex-col gap-2 w-full">
+            <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-300">
+              Username
+            </label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              autoComplete="username"
+              required
+              className="block w-full rounded-md border-0 py-2 px-3 bg-[#232323] text-white shadow-sm ring-1 ring-inset ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#93233B] sm:text-sm sm:leading-6 min-h-[44px]"
+            />
           </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative flex w-full justify-center rounded-md bg-[#93233B] px-3 py-2 text-sm font-semibold text-white hover:bg-[#7a1d31] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#93233B] disabled:bg-[#93233B]/50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
+          <div className="flex flex-col gap-2 w-full">
+            <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-300">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              className="block w-full rounded-md border-0 py-2 px-3 bg-[#232323] text-white shadow-sm ring-1 ring-inset ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#93233B] sm:text-sm sm:leading-6 min-h-[44px]"
+            />
           </div>
+          <LoadingButton
+            type="submit"
+            isLoading={loading}
+            className="w-full rounded-md bg-[#93233B] px-3 py-3 text-sm font-semibold text-white hover:bg-[#7a1d31] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#93233B] disabled:bg-[#93233B]/50 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+          >
+            Sign in
+          </LoadingButton>
         </form>
       </div>
     </div>

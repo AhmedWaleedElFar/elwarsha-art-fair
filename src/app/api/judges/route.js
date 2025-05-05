@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs";
 export async function GET() {
   try {
     await connectDB();
-    const judges = await Judge.find({}, "_id name email categories").lean();
+    const judges = await Judge.find({}, "_id username firstName name categories").lean();
     return Response.json({ success: true, judges });
   } catch (err) {
     return Response.json({ success: false, error: err.message || "Failed to fetch judges" }, { status: 500 });
@@ -23,21 +23,28 @@ export async function POST(req) {
       return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
     await connectDB();
-    const { email, name, password, categories } = await req.json();
+    const { username, firstName, name, password, categories } = await req.json();
     // Validate input
-    const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-    if (!email || !emailRegex.test(email) || !name || !password || !categories || !Array.isArray(categories) || categories.length === 0) {
-      return Response.json({ success: false, error: "All fields are required, email must be valid, and at least one category must be selected" }, { status: 400 });
+    if (!username || !name || !password || !categories || !Array.isArray(categories) || categories.length === 0) {
+      return Response.json({ success: false, error: "All fields are required and at least one category must be selected" }, { status: 400 });
     }
     // Check if judge exists (case-insensitive)
-    const exists = await Judge.findOne({ email: { $regex: `^${email}$`, $options: 'i' } });
+    const exists = await Judge.findOne({ username: { $regex: `^${username}$`, $options: 'i' } });
     if (exists) {
       return Response.json({ success: false, error: "Judge already exists" }, { status: 409 });
     }
-    // Debug logging for password
-    console.log('Creating judge with password:', password);
-    const judge = await Judge.create({ email, name, password, categories });
-    return Response.json({ success: true, judge: { _id: judge._id, email: judge.email, name: judge.name, categories: judge.categories } }, { status: 201 });
+    // Create the judge and let the model handle password hashing
+    console.log('Creating judge with unhashed password to let model middleware handle it');
+    const judge = await Judge.create({ 
+      username, 
+      firstName, 
+      name, 
+      password, // Let the pre-save middleware hash this
+      categories 
+    });
+    
+    console.log('Judge created with ID:', judge._id);
+    return Response.json({ success: true, judge: { _id: judge._id, username: judge.username, firstName: judge.firstName, name: judge.name, categories: judge.categories } }, { status: 201 });
   } catch (err) {
     return Response.json({ success: false, error: err.message || "Failed to create judge" }, { status: 500 });
   }

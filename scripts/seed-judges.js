@@ -15,12 +15,14 @@ async function seed() {
     {
       username: 'judge1',
       password: 'judgepass',
+      firstName: 'Judge',
       name: 'Judge One',
       categories: ['Photography', 'Digital Painting'],
     },
     {
       username: 'judge2',
       password: 'judgepass',
+      firstName: 'Judge',
       name: 'Judge Two',
       categories: ['Photography'],
     },
@@ -29,7 +31,7 @@ async function seed() {
   for (const judge of judges) {
     const exists = await Judge.findOne({ username: judge.username });
     if (!exists) {
-      await Judge.create(judge);
+      await Judge.createWithHashedPassword(judge);
       console.log(`Seeded: ${judge.username}`);
     } else {
       console.log(`Already exists: ${judge.username}`);
