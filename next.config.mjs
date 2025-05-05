@@ -7,10 +7,10 @@ const nextConfig = {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        canvas: false,
         fs: false,
         path: false,
         stream: false,
+        canvas: false, // Just in case
       };
     }
     return config;

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useLayoutEffect, useCallback } from 'react';
+import('pdfjs-dist/build/pdf.worker.entry');
 
 export default function PdfImagePreview({ url, width = 300, height = 400 }) {
   const canvasRef = useRef(null);
@@ -24,9 +25,8 @@ export default function PdfImagePreview({ url, width = 300, height = 400 }) {
       setError('');
       try {
         if (typeof window === 'undefined') return;
-        pdfjsLib = await import('pdfjs-dist/webpack');
-        const workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+        pdfjsLib = await import('pdfjs-dist/build/pdf');
+        await import('pdfjs-dist/build/pdf.worker.entry');
         // Google Drive proxy logic
         function getGoogleDriveFileId(url) {
           let match = url.match(/\/file\/d\/([^/]+)/);
@@ -43,7 +43,7 @@ export default function PdfImagePreview({ url, width = 300, height = 400 }) {
           return url;
         }
         const pdfUrl = getGoogleDriveProxyUrl(url);
-        console.log('[PDF Preview] workerSrc:', workerSrc);
+        //console.log('[PDF Preview] workerSrc:', workerSrc);
         console.log('[PDF Preview] pdfUrl:', pdfUrl);
         loadingTask = pdfjsLib.getDocument(pdfUrl);
         const pdf = await loadingTask.promise;
