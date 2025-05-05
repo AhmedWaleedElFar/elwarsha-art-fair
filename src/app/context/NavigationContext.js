@@ -2,6 +2,8 @@
 
 "use client";
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+
 
 const NavigationContext = createContext({
   isNavigating: false,
@@ -40,6 +42,7 @@ function NavigationProviderInner({ isNavigating, setIsNavigating, children }) {
 
   // Reset navigation state when the route changes
   useEffect(() => {
+
     // Check if the route actually changed
     const pathChanged = previousPathRef.current !== pathname;
     const searchParamsChanged = previousSearchParamsRef.current?.toString() !== searchParams?.toString();
@@ -77,7 +80,7 @@ function NavigationProviderInner({ isNavigating, setIsNavigating, children }) {
         clearTimeout(navigationTimeoutRef.current);
       }
     };
-  }, [ searchParams, isNavigating]);
+  }, [isNavigating]);
 
   // Handle beforeunload event for full page refreshes
   useEffect(() => {
