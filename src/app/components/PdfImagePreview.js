@@ -23,7 +23,7 @@ export default function PdfImagePreview({ url, width = 300, height = 400 }) {
       setError('');
       try {
         if (typeof window === 'undefined') return;
-        pdfjsLib = await import('pdfjs-dist/build/pdf');
+        pdfjsLib = await import('pdfjs-dist/webpack');
         const workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
         pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
         // Google Drive proxy logic
