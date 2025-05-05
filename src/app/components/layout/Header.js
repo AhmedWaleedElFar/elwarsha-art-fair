@@ -1,6 +1,7 @@
 'use client';
 import LoadingLink from '@/app/components/ui/LoadingLink';
 import { useSession, signOut } from 'next-auth/react';
+import DropdownMenu from './DropdownMenu';
 
 export default function Header() {
   const { data: session, status } = useSession();
@@ -17,33 +18,7 @@ export default function Header() {
             </LoadingLink>
           </div>
           <div className="flex gap-4 items-center">
-            {/* Show Vote for judges only */}
-            {user?.role === 'judge' && (
-  <>
-    <LoadingLink 
-      href="/vote" 
-      className="text-gray-300 hover:text-[#93233B] transition-colors font-medium px-3 py-2 rounded-md hover:bg-[#2a2a2a]"
-    >
-      Vote
-    </LoadingLink>
-    <LoadingLink 
-      href="/judge-votes" 
-      className="text-gray-300 hover:text-[#93233B] transition-colors font-medium px-3 py-2 rounded-md hover:bg-[#2a2a2a]"
-    >
-      My Votes
-    </LoadingLink>
-  </>
-)}
-            {/* Show Admin for admins only */}
-            {user?.role === 'admin' && (
-              <LoadingLink 
-                href="/admin" 
-                className="text-gray-300 hover:text-[#93233B] transition-colors font-medium px-3 py-2 rounded-md hover:bg-[#2a2a2a]"
-              >
-                Admin Dashboard
-              </LoadingLink>
-            )}
-            {/* Show Login if not logged in */}
+            {/* Only show Login if not logged in */}
             {!user && status !== 'loading' && (
               <LoadingLink 
                 href="/login" 
@@ -52,19 +27,9 @@ export default function Header() {
                 Login
               </LoadingLink>
             )}
-            {/* Show Sign Out if logged in */}
+            {/* Only show DropdownMenu if logged in */}
             {user && (
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => signOut({ callbackUrl: '/' })}
-                  className="text-gray-300 hover:text-[#93233B] transition-colors font-medium px-3 py-2 rounded-md hover:bg-[#2a2a2a]"
-                >
-                  Sign Out
-                </button>
-                <span className="text-gray-400 text-sm">
-                  {user.name || user.firstName || user.username}
-                </span>
-              </div>
+              <DropdownMenu user={user} signOut={signOut} />
             )}
           </div>
         </div>

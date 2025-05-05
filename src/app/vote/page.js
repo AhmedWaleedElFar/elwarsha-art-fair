@@ -85,6 +85,7 @@ export default function VotePage() {
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [codeSearch, setCodeSearch] = useState('');
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -174,6 +175,18 @@ export default function VotePage() {
           </LoadingLink>
         </div>
 
+        {/* Search by artwork code */}
+        <div className="mb-6 flex justify-center">
+          <input
+            type="text"
+            value={codeSearch}
+            onChange={e => setCodeSearch(e.target.value)}
+            placeholder="Search by artwork code..."
+            className="w-full max-w-xs px-4 py-2 rounded-md bg-[#1e1e1e] border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]"
+            aria-label="Search by artwork code"
+          />
+        </div>
+
         {/* Category Selector for Judges with Multiple Categories */}
         {session && session.user?.categories && session.user.categories.length > 1 && (
           <div className="mb-6 flex justify-center">
@@ -204,10 +217,20 @@ export default function VotePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {artworks.filter(a => a.category === selectedCategory).length === 0 ? (
+          {artworks.filter(a => 
+              codeSearch
+                ? (a.artworkCode && a.artworkCode.toLowerCase().includes(codeSearch.toLowerCase()))
+                : a.category === selectedCategory
+            ).length === 0 ? (
             <div className="col-span-full text-center text-gray-400">No artworks found.</div>
           ) : (
-            artworks.filter(a => a.category === selectedCategory).map(artwork => (
+            artworks
+              .filter(a => 
+                codeSearch
+                  ? (a.artworkCode && a.artworkCode.toLowerCase().includes(codeSearch.toLowerCase()))
+                  : a.category === selectedCategory
+              )
+              .map(artwork => (
               <div key={artwork._id} className="bg-[#1e1e1e] rounded-lg shadow-lg p-4 flex flex-col items-center">
                 <div className="bg-[#2a2a2a] p-2 rounded mb-4 flex items-center justify-center">
                   <ArtPreview url={artwork.imageUrl} title={artwork.title} />
@@ -215,6 +238,12 @@ export default function VotePage() {
                 <h2 className="text-lg font-bold mt-2 mb-1 text-center">{artwork.title}</h2>
                 <div className="text-gray-300 text-sm mb-1">By {artwork.artistName}</div>
                 <div className="text-gray-400 text-xs mb-2">Category: <span className="text-[#93233B]">{artwork.category}</span></div>
+                {/* Artwork Code below image */}
+                {artwork.artworkCode && (
+                  <div className="text-xs font-mono text-[#93233B] bg-[#2a2a2a] px-2 py-1 rounded mb-2 break-all">
+                    Code: {artwork.artworkCode}
+                  </div>
+                )}
                 <button
                   className="bg-[#93233B] hover:bg-[#7a1d31] text-white px-4 py-2 rounded-md mt-auto transition-colors"
                   onClick={() => {

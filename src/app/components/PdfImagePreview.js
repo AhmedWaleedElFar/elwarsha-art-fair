@@ -51,7 +51,7 @@ export default function PdfImagePreview({ url, width = 192, height = 192 }) {
 
   if (error) {
     return (
-      <div className="relative" style={{ width, height }}>
+      <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md" style={{ height }} aria-label="PDF preview error">
         <div className="absolute inset-0 flex items-center justify-center bg-[#2a2a2a] rounded">
           <span className="text-[#ff6b6b] text-sm">{error}</span>
         </div>
@@ -64,7 +64,8 @@ export default function PdfImagePreview({ url, width = 192, height = 192 }) {
       ref={canvasRef}
       width={width}
       height={height}
-      style={{ width, height, borderRadius: 8, background: '#2a2a2a', objectFit: 'contain', display: 'block', margin: '0 auto' }}
+      style={{ width: '100%', maxWidth: 400, height: 'auto', borderRadius: 8, background: '#2a2a2a', objectFit: 'contain', display: 'block', margin: '0 auto' }}
+      aria-label="PDF preview"
     />
   );
 }

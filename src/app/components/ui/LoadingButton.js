@@ -14,8 +14,9 @@ export default function LoadingButton({
   return (
     <button
       type={type}
-      className={`relative ${className} ${isLoading ? 'cursor-wait' : ''}`}
+      className={`relative ${className} ${isLoading ? 'cursor-wait' : ''} w-full sm:w-auto min-h-[44px]`}
       disabled={disabled || isLoading}
+      aria-busy={isLoading}
       onClick={onClick}
       {...props}
     >

@@ -168,9 +168,9 @@ export default function AdminPage() {
                   ) : (
                     artworks.map((a, i) => {
                       let rowClass = '';
-                      if (i === 0) rowClass = 'bg-yellow-900 border-l-4 border-yellow-400'; // Gold
-                      else if (i === 1) rowClass = 'bg-gray-700 border-l-4 border-gray-400'; // Silver
-                      else if (i === 2) rowClass = 'bg-orange-900 border-l-4 border-orange-400'; // Bronze
+                      if (i === 0) rowClass = 'bg-yellow-500 border-l-4 border-yellow-500 bg-opacity-20'; // Gold
+                      else if (i === 1) rowClass = 'bg-gray-500 border-l-4 border-gray-500 bg-opacity-20'; // Silver
+                      else if (i === 2) rowClass = 'bg-orange-500 border-l-4 border-orange-500 bg-opacity-20'; // Bronze
                       return (
                         <li key={a._id} className={`flex flex-col rounded-md ${rowClass} p-3 mb-2`}>
                           <span className="font-medium text-white">{a.title}</span>

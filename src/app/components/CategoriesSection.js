@@ -20,9 +20,9 @@ export default function CategoriesSection() {
   if (loading) {
     // Skeleton loader
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16" aria-label="Art categories loading">
         {categories.map((_, idx) => (
-          <div key={idx} className="bg-[#1e1e1e] rounded-lg shadow-md 0 p-6 flex flex-col items-center animate-pulse">
+          <div key={idx} className="bg-[#1e1e1e] rounded-lg shadow-md p-4 sm:p-6 flex flex-col items-center animate-pulse w-full min-h-[100px]">
             <div className="w-20 h-6 bg-[#2a2a2a] rounded mb-2" />
             <div className="w-32 h-4 bg-[#333333] rounded" />
           </div>
@@ -32,9 +32,9 @@ export default function CategoriesSection() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16" aria-label="Art categories">
       {categories.map((cat) => (
-        <div key={cat.title} className="bg-[#1e1e1e] rounded-lg shadow-md  p-6 flex flex-col items-center hover:shadow-lg transition-shadow">
+        <div key={cat.title} className="bg-[#1e1e1e] rounded-lg shadow-md p-4 sm:p-6 flex flex-col items-center hover:shadow-lg transition-shadow w-full min-h-[100px]">
           <span className="text-2xl font-bold mb-2 text-[#93233B]">
             {cat.title}
           </span>

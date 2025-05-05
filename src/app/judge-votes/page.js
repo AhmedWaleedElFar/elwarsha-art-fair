@@ -196,9 +196,9 @@ export default function JudgeVotesPage() {
                     {votes.map((vote, idx) => {
                       const art = getArtwork(vote.artworkId);
                       let rowClass = '';
-                      if (idx === 0) rowClass = 'border-l-4 border-yellow-500 bg-yellow-900 bg-opacity-20';
-                      else if (idx === 1) rowClass = 'border-l-4 border-gray-500 bg-gray-700 bg-opacity-20';
-                      else if (idx === 2) rowClass = 'border-l-4 border-orange-500 bg-orange-900 bg-opacity-20';
+                      if (idx === 0) rowClass = 'border-l-4 border-yellow-500 bg-yellow-500 bg-opacity-20';
+                      else if (idx === 1) rowClass = 'border-l-4 border-gray-500 bg-gray-500 bg-opacity-20';
+                      else if (idx === 2) rowClass = 'border-l-4 border-orange-500 bg-orange-500 bg-opacity-20';
                       return (
                         <tr key={vote._id} className={rowClass}>
                           <td className="px-4 py-3 font-semibold">{art ? art.title : "Unknown"}</td>
