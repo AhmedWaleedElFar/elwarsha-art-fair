@@ -1,73 +1,62 @@
 import { useEffect, useRef, useState } from 'react';
-import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 
-// Required for pdfjs worker
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-}
-
-function getGoogleDriveFileId(url) {
-  let match = url.match(/\/file\/d\/([^/]+)/);
-  if (match) return match[1];
-  match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (match) return match[1];
-  return null;
-}
-
-function getGoogleDriveProxyUrl(url) {
-  const fileId = getGoogleDriveFileId(url);
-  if (fileId) {
-    return `/api/proxy-pdf?fileId=${fileId}`;
-  }
-  return url;
-}
-
-export default function PdfImagePreview({ url, width = 192, height = 192 }) {
+export default function PdfImagePreview({ url, width = 300, height = 400 }) {
   const canvasRef = useRef(null);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const render = async () => {
+    let pdfjsLib;
+    let loadingTask;
+    let destroyed = false;
+
+    async function renderPDF() {
       try {
-        setError(null);
+        pdfjsLib = await import('pdfjs-dist/build/pdf');
+        if (typeof window !== 'undefined') {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+        }
+        // Always use proxy for Google Drive
+        function getGoogleDriveFileId(url) {
+          let match = url.match(/\/file\/d\/([^/]+)/);
+          if (match) return match[1];
+          match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+          if (match) return match[1];
+          return null;
+        }
+        function getGoogleDriveProxyUrl(url) {
+          const fileId = getGoogleDriveFileId(url);
+          if (fileId) {
+            return `/api/proxy-pdf?fileId=${fileId}`;
+          }
+          return url;
+        }
         const pdfUrl = getGoogleDriveProxyUrl(url);
-        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        loadingTask = pdfjsLib.getDocument(pdfUrl);
         const pdf = await loadingTask.promise;
         const page = await pdf.getPage(1);
         const viewport = page.getViewport({ scale: 1 });
         const canvas = canvasRef.current;
-        if (!canvas) return;
-        // Scale to fit
-        const scale = Math.min(width / viewport.width, height / viewport.height);
+        if (!canvas || destroyed) return;
+        // Calculate scale to fit the box while preserving aspect ratio
+        const scale = Math.min((width || viewport.width) / viewport.width, (height || viewport.height) / viewport.height);
         const scaledViewport = page.getViewport({ scale });
         canvas.width = scaledViewport.width;
         canvas.height = scaledViewport.height;
         const context = canvas.getContext('2d');
         await page.render({ canvasContext: context, viewport: scaledViewport }).promise;
       } catch (err) {
-        setError('Failed to load PDF preview.');
+        setError('Failed to render PDF');
       }
+    }
+
+    renderPDF();
+
+    return () => {
+      destroyed = true;
+      if (loadingTask && loadingTask.destroy) loadingTask.destroy();
     };
-    render();
   }, [url, width, height]);
 
-  if (error) {
-    return (
-      <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md" style={{ height }} aria-label="PDF preview error">
-        <div className="absolute inset-0 flex items-center justify-center bg-[#2a2a2a] rounded">
-          <span className="text-[#ff6b6b] text-sm">{error}</span>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <canvas
-      ref={canvasRef}
-      width={width}
-      height={height}
-      style={{ width: '100%', maxWidth: 400, height: 'auto', borderRadius: 8, background: '#2a2a2a', objectFit: 'contain', display: 'block', margin: '0 auto' }}
-      aria-label="PDF preview"
-    />
-  );
+  if (error) return <div className="text-red-500 text-xs">{error}</div>;
+  return <canvas ref={canvasRef} style={{ width, height, maxWidth: '100%', borderRadius: 8, background: '#2a2a2a' }} />;
 }
