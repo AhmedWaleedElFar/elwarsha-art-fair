@@ -1,9 +1,6 @@
 'use client';
 
-"use client";
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
-
 
 const NavigationContext = createContext({
   isNavigating: false,
@@ -11,77 +8,64 @@ const NavigationContext = createContext({
   endNavigation: () => {},
 });
 
+// Main provider that can be used anywhere, including server components
 export function NavigationProvider({ children }) {
   const [isNavigating, setIsNavigating] = useState(false);
+  
+  // Create functions at this level to avoid re-creation
+  const startNavigation = useCallback(() => {
+    setIsNavigating(true);
+  }, [setIsNavigating]);
+  
+  const endNavigation = useCallback(() => {
+    setIsNavigating(false);
+  }, [setIsNavigating]);
+  
   return (
-    <NavigationProviderInner isNavigating={isNavigating} setIsNavigating={setIsNavigating}>
+    <NavigationContext.Provider value={{ isNavigating, startNavigation, endNavigation }}>
+      <NavigationEffects 
+        isNavigating={isNavigating} 
+        setIsNavigating={setIsNavigating}
+      />
       {children}
-    </NavigationProviderInner>
+    </NavigationContext.Provider>
   );
 }
 
-function NavigationProviderInner({ isNavigating, setIsNavigating, children }) {
+// Separate component for side effects
+function NavigationEffects({ isNavigating, setIsNavigating }) {
   const navigationTimeoutRef = useRef(null);
-
-  // Explicitly expose methods to start and end navigation state
-  const startNavigation = useCallback(() => {
-    // Clear any existing timeout to prevent race conditions
-    if (navigationTimeoutRef.current) {
-      clearTimeout(navigationTimeoutRef.current);
-    }
-    setIsNavigating(true);
-  }, []);
   
-  const endNavigation = useCallback(() => {
-    // Clear any existing timeout to prevent race conditions
-    if (navigationTimeoutRef.current) {
-      clearTimeout(navigationTimeoutRef.current);
-    }
-    setIsNavigating(false);
-  }, []);
-
-  // Reset navigation state when the route changes
+  // Auto-reset navigation state after timeout
   useEffect(() => {
-
-    // Check if the route actually changed
-    const pathChanged = previousPathRef.current !== pathname;
-    const searchParamsChanged = previousSearchParamsRef.current?.toString() !== searchParams?.toString();
-    
-    if (pathChanged || searchParamsChanged) {
-      // Update refs
-      previousPathRef.current = pathname;
-      previousSearchParamsRef.current = searchParams;
-      
-      // Set a timeout to ensure the loading state is visible for a moment
-      // but also ensure it eventually turns off
-      if (isNavigating) {
-        if (navigationTimeoutRef.current) {
-          clearTimeout(navigationTimeoutRef.current);
-        }
-        
-        navigationTimeoutRef.current = setTimeout(() => {
-          setIsNavigating(false);
-          navigationTimeoutRef.current = null;
-        }, 300);
-      }
-    }
-    
-    // Ensure we always have a safety timeout to turn off loading state
-    // This prevents the loading state from getting stuck
-    const safetyTimeout = setTimeout(() => {
-      if (isNavigating) {
-        setIsNavigating(false);
-      }
-    }, 3000); // 3 seconds max loading time
-    
-    return () => {
-      clearTimeout(safetyTimeout);
+    if (isNavigating) {
+      // Clear any existing timeout
       if (navigationTimeoutRef.current) {
         clearTimeout(navigationTimeoutRef.current);
       }
-    };
-  }, [isNavigating]);
-
+      
+      // Set a timeout to turn off loading state after a delay
+      navigationTimeoutRef.current = setTimeout(() => {
+        setIsNavigating(false);
+        navigationTimeoutRef.current = null;
+      }, 300);
+      
+      // Safety timeout to prevent stuck loading state
+      const safetyTimeout = setTimeout(() => {
+        if (isNavigating) {
+          setIsNavigating(false);
+        }
+      }, 3000); // 3 seconds max loading time
+      
+      return () => {
+        clearTimeout(safetyTimeout);
+        if (navigationTimeoutRef.current) {
+          clearTimeout(navigationTimeoutRef.current);
+        }
+      };
+    }
+  }, [isNavigating, setIsNavigating]);
+  
   // Handle beforeunload event for full page refreshes
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -90,15 +74,13 @@ function NavigationProviderInner({ isNavigating, setIsNavigating, children }) {
     
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, []);
-
-  return (
-    <NavigationContext.Provider value={{ isNavigating, startNavigation, endNavigation }}>
-      {children}
-    </NavigationContext.Provider>
-  );
+  }, [setIsNavigating]);
+  
+  // This component doesn't render anything
+  return null;
 }
 
+// Hook to use the navigation context
 export function useNavigation() {
   return useContext(NavigationContext);
 }
