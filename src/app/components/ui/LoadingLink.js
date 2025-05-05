@@ -69,8 +69,10 @@ export default function LoadingLink({ href, children, className, onClick, ...pro
   return (
     <Link 
       href={href} 
+      className={`w-full sm:w-auto min-h-[44px] ${className} ${localLoading ? 'opacity-70 pointer-events-none' : ''}`}
       onClick={handleClick} 
-      className={`${className} ${localLoading ? 'opacity-70 pointer-events-none' : ''}`}
+      aria-disabled={localLoading}
+      aria-busy={localLoading}
       {...props}
     >
       {localLoading ? (

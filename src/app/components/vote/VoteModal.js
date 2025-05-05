@@ -47,6 +47,9 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
 
   if (!open || !artwork) return null;
 
+  // Responsive modal wrapper
+  // Use fixed inset-0 z-50 for overlay, flex for centering, and responsive modal width
+
   function handleChange(e) {
     const value = Number(e.target.value);
     setScores({ ...scores, [e.target.name]: value });
@@ -70,15 +73,18 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80">
-      <div className="bg-[#1e1e1e] rounded-lg shadow-lg max-w-2xl w-full p-8 relative text-white">
-        <button
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors text-2xl"
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 overflow-auto p-2" role="dialog" aria-modal="true">
+      <div className="bg-[#1e1e1e] rounded-lg shadow-lg max-w-lg w-full p-4 sm:p-8 relative text-white">
+        {/* <button
+          className="absolute top-2 right-2 text-gray-400 hover:text-white transition-colors text-2xl w-10 h-10 flex items-center justify-center focus:outline-none"
           onClick={onClose}
+          aria-label="Close"
+          tabIndex={0}
         >
           ×
-        </button>
-        <div className="flex flex-col md:flex-row gap-6">
+        </button> */}
+        <div className="flex flex-col md:flex-row gap-6 overflow-y-auto max-h-[70vh] pb-4">
+
           {/* Left: Artwork Preview (PDF, Google Drive, or Image) */}
           <div className="flex-shrink-0 w-full md:w-1/2 flex items-center justify-center">
             {(() => {
@@ -151,6 +157,14 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
             </form>
           </div>
         </div>
+        {/* Close Vote button for mobile accessibility */}
+        <button
+          className="mt-4 w-full rounded-md bg-[#93233B] px-4 py-3 text-base font-semibold text-white hover:bg-[#7a1d31] transition-colors focus:outline-none focus:ring-2 focus:ring-[#93233B]"
+          onClick={onClose}
+          aria-label="Close Vote Modal"
+        >
+          Close Vote
+        </button>
       </div>
     </div>
   );

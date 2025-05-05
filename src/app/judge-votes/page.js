@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import toast from 'react-hot-toast';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import VoteModal from "../components/vote/VoteModal";
@@ -17,6 +19,7 @@ export default function JudgeVotesPage() {
   const [artworks, setArtworks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedVote, setSelectedVote] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedArtwork, setSelectedArtwork] = useState(null);
 
@@ -105,31 +108,13 @@ export default function JudgeVotesPage() {
   }
 
   async function deleteVote(voteId) {
-    if (!confirm('Are you sure you want to delete this vote? This action cannot be undone.')) {
-      return;
-    }
-    
-    try {
-      const response = await fetch(`/api/vote/${voteId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete vote');
-      }
-
-      // Remove the deleted vote from the local state
-      setVotes(prevVotes => prevVotes.filter(vote => vote._id !== voteId));
-    } catch (error) {
-      console.error('Error deleting vote:', error);
-      alert('Failed to delete vote. Please try again.');
-    }
+    setConfirmDelete(votes.find(vote => vote._id === voteId));
   }
 
   return (
     <div className="min-h-screen bg-black text-white px-4 py-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4 text-center text-white">Welcome, {session?.user?.firstName || session?.user?.name || 'Judge'}</h1>
+        <h1 className="text-3xl font-bold mb-4 text-center text-white">Welcome, {session?.user?.name || session?.user?.firstName || session?.user?.username || 'Judge'}</h1>
         <h2 className="text-xl text-center text-gray-300 mb-8">My Votes</h2>
 
         <div className="flex items-center justify-between mb-6">
@@ -211,9 +196,9 @@ export default function JudgeVotesPage() {
                     {votes.map((vote, idx) => {
                       const art = getArtwork(vote.artworkId);
                       let rowClass = '';
-                      if (idx === 0) rowClass = 'border-l-4 border-yellow-500 bg-yellow-900 bg-opacity-20';
-                      else if (idx === 1) rowClass = 'border-l-4 border-gray-500 bg-gray-700 bg-opacity-20';
-                      else if (idx === 2) rowClass = 'border-l-4 border-orange-500 bg-orange-900 bg-opacity-20';
+                      if (idx === 0) rowClass = 'border-l-4 border-yellow-500 bg-yellow-500 bg-opacity-20';
+                      else if (idx === 1) rowClass = 'border-l-4 border-gray-500 bg-gray-500 bg-opacity-20';
+                      else if (idx === 2) rowClass = 'border-l-4 border-orange-500 bg-orange-500 bg-opacity-20';
                       return (
                         <tr key={vote._id} className={rowClass}>
                           <td className="px-4 py-3 font-semibold">{art ? art.title : "Unknown"}</td>
@@ -262,6 +247,37 @@ export default function JudgeVotesPage() {
           ))
         )}
       </div>
+
+      {/* Confirmation Modal for Vote Deletion */}
+      <ConfirmationModal 
+        isOpen={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={async () => {
+          if (!confirmDelete) return;
+          try {
+            const response = await fetch(`/api/vote/${confirmDelete._id}`, {
+              method: 'DELETE',
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to delete vote');
+            }
+
+            // Remove the deleted vote from the local state
+            setVotes(prevVotes => prevVotes.filter(vote => vote._id !== confirmDelete._id));
+            toast.success('Vote deleted successfully.');
+          } catch (error) {
+            console.error('Error deleting vote:', error);
+            toast.error('Failed to delete vote. Please try again.');
+          } finally {
+            setConfirmDelete(null);
+          }
+        }}
+        title="Delete Vote"
+        message="Are you sure you want to delete this vote? This action cannot be undone."
+        confirmText="Delete Vote"
+        variant="danger"
+      />
 
       <VoteModal
         open={modalOpen}

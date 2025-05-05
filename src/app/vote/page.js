@@ -3,6 +3,8 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, memo } from 'react';
+import toast from 'react-hot-toast';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import VoteModal from '../components/vote/VoteModal';
 import LoadingLink from '@/app/components/ui/LoadingLink';
 
@@ -80,8 +82,10 @@ export default function VotePage() {
   const [loading, setLoading] = useState(true);
   const [selectedArtwork, setSelectedArtwork] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [codeSearch, setCodeSearch] = useState('');
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -139,7 +143,7 @@ export default function VotePage() {
   return (
     <div className="min-h-screen bg-black text-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4 text-center text-white">Welcome, {session?.user?.firstName || session?.user?.name || 'Judge'}</h1>
+        <h1 className="text-3xl font-bold mb-4 text-center text-white">Welcome, {session?.user?.name || session?.user?.firstName || session?.user?.username}</h1>
         <h2 className="text-xl text-center text-gray-300 mb-8">Vote on Artworks</h2>
         
         <div className="flex items-center justify-between mb-6">
@@ -169,6 +173,18 @@ export default function VotePage() {
               <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </LoadingLink>
+        </div>
+
+        {/* Search by artwork code */}
+        <div className="mb-6 flex justify-center">
+          <input
+            type="text"
+            value={codeSearch}
+            onChange={e => setCodeSearch(e.target.value)}
+            placeholder="Search by artwork code..."
+            className="w-full max-w-xs px-4 py-2 rounded-md bg-[#1e1e1e] border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-[#93233B]"
+            aria-label="Search by artwork code"
+          />
         </div>
 
         {/* Category Selector for Judges with Multiple Categories */}
@@ -201,10 +217,20 @@ export default function VotePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {artworks.filter(a => a.category === selectedCategory).length === 0 ? (
+          {artworks.filter(a => 
+              codeSearch
+                ? (a.artworkCode && a.artworkCode.toLowerCase().includes(codeSearch.toLowerCase()))
+                : a.category === selectedCategory
+            ).length === 0 ? (
             <div className="col-span-full text-center text-gray-400">No artworks found.</div>
           ) : (
-            artworks.filter(a => a.category === selectedCategory).map(artwork => (
+            artworks
+              .filter(a => 
+                codeSearch
+                  ? (a.artworkCode && a.artworkCode.toLowerCase().includes(codeSearch.toLowerCase()))
+                  : a.category === selectedCategory
+              )
+              .map(artwork => (
               <div key={artwork._id} className="bg-[#1e1e1e] rounded-lg shadow-lg p-4 flex flex-col items-center">
                 <div className="bg-[#2a2a2a] p-2 rounded mb-4 flex items-center justify-center">
                   <ArtPreview url={artwork.imageUrl} title={artwork.title} />
@@ -212,6 +238,12 @@ export default function VotePage() {
                 <h2 className="text-lg font-bold mt-2 mb-1 text-center">{artwork.title}</h2>
                 <div className="text-gray-300 text-sm mb-1">By {artwork.artistName}</div>
                 <div className="text-gray-400 text-xs mb-2">Category: <span className="text-[#93233B]">{artwork.category}</span></div>
+                {/* Artwork Code below image */}
+                {artwork.artworkCode && (
+                  <div className="text-xs font-mono text-[#93233B] bg-[#2a2a2a] px-2 py-1 rounded mb-2 break-all">
+                    Code: {artwork.artworkCode}
+                  </div>
+                )}
                 <button
                   className="bg-[#93233B] hover:bg-[#7a1d31] text-white px-4 py-2 rounded-md mt-auto transition-colors"
                   onClick={() => {
@@ -224,25 +256,7 @@ export default function VotePage() {
                 {votes.some(v => v.artworkId === artwork._id) && (
                   <button
                     className="mt-2 px-4 py-1 text-sm bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors"
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      const vote = votes.find(v => v.artworkId === artwork._id);
-                      if (!vote) return;
-                      if (confirm('Are you sure you want to delete your vote for this artwork?')) {
-                        const res = await fetch(`/api/vote/${vote._id}`, { method: 'DELETE' });
-                        let ok = res.ok;
-                        let data = {};
-                        try {
-                          data = await res.json();
-                        } catch {}
-                        if (ok && data.success) {
-                          setVotes(votes => votes.filter(v => v._id !== vote._id));
-                          alert('Vote deleted.');
-                        } else {
-                          alert('Failed to delete vote.');
-                        }
-                      }
-                    }}
+                    onClick={() => setConfirmDelete(votes.find(v => v.artworkId === artwork._id))}
                   >Delete Vote</button>
                 )}
               </div>
@@ -281,13 +295,43 @@ export default function VotePage() {
               }
             });
             setModalOpen(false);
-            alert('Vote submitted!');
+            toast.success('Vote submitted!');
           } catch (err) {
-            alert(err.message);
+            toast.error(err.message);
           }
         }}
       />
-      </div>
+      {/* Confirmation Modal for Vote Deletion */}
+      <ConfirmationModal 
+        isOpen={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={async () => {
+          if (!confirmDelete) return;
+          try {
+            const res = await fetch(`/api/vote/${confirmDelete._id}`, { method: 'DELETE' });
+            let ok = res.ok;
+            let data = {};
+            try {
+              data = await res.json();
+            } catch {}
+            if (ok && data.success) {
+              setVotes(votes => votes.filter(v => v._id !== confirmDelete._id));
+              toast.success('Vote deleted.');
+            } else {
+              toast.error('Failed to delete vote.');
+            }
+          } catch (error) {
+            toast.error('Error deleting vote.');
+          } finally {
+            setConfirmDelete(null);
+          }
+        }}
+        title="Delete Vote"
+        message="Are you sure you want to delete your vote for this artwork? This action cannot be undone."
+        confirmText="Delete Vote"
+        variant="danger"
+      />
     </div>
+  </div>
   );
 }
