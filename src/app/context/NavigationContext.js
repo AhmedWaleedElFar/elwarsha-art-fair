@@ -77,7 +77,7 @@ function NavigationProviderInner({ isNavigating, setIsNavigating, children }) {
         clearTimeout(navigationTimeoutRef.current);
       }
     };
-  }, [pathname, searchParams, isNavigating]);
+  }, [ searchParams, isNavigating]);
 
   // Handle beforeunload event for full page refreshes
   useEffect(() => {
