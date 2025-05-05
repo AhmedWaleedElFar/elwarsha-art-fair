@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import styles from './VoteModal.module.css';
 import dynamic from 'next/dynamic';
 import LoadingButton from '@/app/components/ui/LoadingButton';
-const PdfImagePreview = dynamic(() => import('../PdfImagePreview'), { ssr: false });
+const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview'), {
+  ssr: false,
+});
 
 export default function VoteModal({ artwork, open, onClose, onSubmit, previousVote }) {
   const [scores, setScores] = useState(previousVote ? previousVote.scores : {

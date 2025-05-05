@@ -7,6 +7,8 @@ import toast from 'react-hot-toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import VoteModal from '../components/vote/VoteModal';
 import LoadingLink from '@/app/components/ui/LoadingLink';
+import dynamic from 'next/dynamic';
+import Image from 'next/image';
 
 function isGoogleDriveLink(url) {
   return url?.includes('drive.google.com');
@@ -28,10 +30,10 @@ function isPdfUrl(url) {
   return url?.toLowerCase().endsWith('.pdf');
 }
 
-import dynamic from 'next/dynamic';
-const PdfImagePreview = dynamic(() => import('../components/PdfImagePreview'), { ssr: false });
+const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview'), {
+  ssr: false,
+});
 
-import Image from 'next/image';
 const ArtPreview = memo(function ArtPreview({ url, title, size = 192 }) {
   if (isGoogleDriveLink(url)) {
     const fileId = getGoogleDriveFileId(url);
