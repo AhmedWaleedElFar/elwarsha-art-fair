@@ -11,12 +11,16 @@ const NavigationContext = createContext({
 
 export function NavigationProvider({ children }) {
   const [isNavigating, setIsNavigating] = useState(false);
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  return (
+    <NavigationProviderInner isNavigating={isNavigating} setIsNavigating={setIsNavigating}>
+      {children}
+    </NavigationProviderInner>
+  );
+}
+
+function NavigationProviderInner({ isNavigating, setIsNavigating, children }) {
   const navigationTimeoutRef = useRef(null);
-  const previousPathRef = useRef(pathname);
-  const previousSearchParamsRef = useRef(searchParams);
-  
+
   // Explicitly expose methods to start and end navigation state
   const startNavigation = useCallback(() => {
     // Clear any existing timeout to prevent race conditions
