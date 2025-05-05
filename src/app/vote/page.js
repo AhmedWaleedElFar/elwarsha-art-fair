@@ -33,45 +33,82 @@ const PdfImagePreview = dynamic(() => import('../components/PdfImagePreview'), {
 
 import Image from 'next/image';
 const ArtPreview = memo(function ArtPreview({ url, title, size = 192 }) {
+  const [imageError, setImageError] = useState(false);
+
   if (isGoogleDriveLink(url)) {
     const fileId = getGoogleDriveFileId(url);
+    
     // Guess type by extension in url or fallback to PDF if not image
     if (isImageUrl(url) && fileId) {
       const directImgUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+      
       return (
-        <Image
-          src={directImgUrl}
-          alt={title}
-          width={size}
-          height={size}
-          style={{ objectFit: 'contain', borderRadius: 8, background: '#2a2a2a' }}
-          className="object-cover rounded mb-4"
-          loading="lazy"
-        />
+        <div 
+          style={{ 
+            position: 'relative', 
+            width: size, 
+            height: size, 
+            background: '#2a2a2a',
+            borderRadius: 8,
+            overflow: 'hidden'
+          }}
+        >
+          {!imageError ? (
+            <Image
+              src={directImgUrl}
+              alt={title || 'Artwork Preview'}
+              fill
+              style={{ 
+                objectFit: 'contain', 
+                borderRadius: 8 
+              }}
+              onError={() => setImageError(true)}
+              loading="lazy"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          ) : (
+            <div 
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: '100%',
+                height: '100%',
+                color: 'white',
+                textAlign: 'center',
+                padding: '10px'
+              }}
+            >
+              Image Failed to Load
+            </div>
+          )}
+        </div>
       );
     } else if ((isPdfUrl(url) || fileId)) {
-      // Use PdfImagePreview for Google Drive PDFs
-      return <PdfImagePreview url={url} width={size} height={size} />;
+      // Existing PDF preview logic remains the same
+      return <PdfImagePreview url={url} />;
     }
   }
-  // Non-Google Drive images or PDFs
-  if (isImageUrl(url)) {
-    return (
-      <Image
-        src={url}
-        alt={title}
-        width={size}
-        height={size}
-        style={{ objectFit: 'contain', borderRadius: 8, background: '#2a2a2a' }}
-        className="object-cover rounded mb-4"
-        loading="lazy"
-      />
-    );
-  } else if (isPdfUrl(url)) {
-    return <PdfImagePreview url={url} width={size} height={size} />;
-  }
-  // fallback: unsupported type
-  return <div className="w-full h-48 flex items-center justify-center bg-[#2a2a2a] rounded mb-4 text-gray-400">Unsupported file type</div>;
+
+  // Fallback for non-Google Drive URLs
+  return (
+    <div 
+      style={{ 
+        width: size, 
+        height: size, 
+        background: '#2a2a2a',
+        borderRadius: 8,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        color: 'white',
+        textAlign: 'center',
+        padding: '10px'
+      }}
+    >
+      No Preview Available
+    </div>
+  );
 });
 
 export default function VotePage() {
