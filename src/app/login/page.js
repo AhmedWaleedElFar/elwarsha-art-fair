@@ -51,7 +51,7 @@ export default function LoginPage() {
         } else if (session?.user?.role === 'judge' && Array.isArray(session.user.categories) && session.user.categories.length > 0) {
           await router.replace('/vote');
         } else {
-          await router.replace('/'); // fallback
+          await router.replace('/login'); // fallback to login instead of home
         }
       }
     } catch (error) {

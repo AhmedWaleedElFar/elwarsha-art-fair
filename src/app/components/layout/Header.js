@@ -12,9 +12,9 @@ export default function Header() {
       <nav className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
+          
+            <LoadingLink href="/login" className="text-2xl font-bold text-[#93233B] hover:text-[#7a1d31] transition-colors">
             <img src="/logo.png" alt="Elwarsha Art Fair Logo" style={{ height: 40, paddingRight: 16 }} />
-            <LoadingLink href="/" className="text-2xl font-bold text-[#93233B] hover:text-[#7a1d31] transition-colors">
-              
             </LoadingLink>
           </div>
           <div className="flex gap-4 items-center">
@@ -29,7 +29,10 @@ export default function Header() {
             )}
             {/* Only show DropdownMenu if logged in */}
             {user && (
-              <DropdownMenu user={user} signOut={signOut} />
+              <DropdownMenu 
+                user={user} 
+                signOut={() => signOut({ callbackUrl: '/login' })} 
+              />
             )}
           </div>
         </div>

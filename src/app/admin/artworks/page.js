@@ -179,7 +179,7 @@ export default function ManageArtworksPage() {
     } else {
       fetchArtworks();
     }
-  }, [session, status]);
+  }, [session, status,router]);
 
   async function fetchArtworks() {
     setLoading(true);
