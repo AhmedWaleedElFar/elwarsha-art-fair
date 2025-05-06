@@ -4,7 +4,12 @@ import { useState, useEffect } from 'react';
 import styles from './VoteModal.module.css';
 import dynamic from 'next/dynamic';
 import LoadingButton from '@/app/components/ui/LoadingButton';
+
 const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview'), {
+  ssr: false,
+});
+
+const ArtworkImagePreview = dynamic(() => import('@/app/components/ArtworkImagePreview'), {
   ssr: false,
 });
 
@@ -100,13 +105,23 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
                 return /\.(jpe?g|png|gif|webp)$/i.test(url) || url?.startsWith('https://picsum.photos/');
               }
               const url = artwork.imageUrl;
-              if (isGoogleDriveLink(url) || isPdfUrl(url)) {
-                return <PdfImagePreview url={url} width={288} height={288} />;
-              } else if (isImageUrl(url)) {
-                return <img src={url} alt={artwork.title} className="rounded max-h-72 object-contain w-full bg-[#2a2a2a] p-2" />;
-              } else {
-                return <div className="w-full h-48 flex items-center justify-center bg-[#2a2a2a] rounded text-gray-400">Unsupported file type</div>;
-              }
+              // if (isGoogleDriveLink(url) || isPdfUrl(url)) {
+              //   return <PdfImagePreview url={url} width={288} height={288} />;
+              // } else if (isImageUrl(url)) {
+              //   return <img src={url} alt={artwork.title} className="rounded max-h-72 object-contain w-full bg-[#2a2a2a] p-2" />;
+              // } else {
+              //   return <div className="w-full h-48 flex items-center justify-center bg-[#2a2a2a] rounded text-gray-400">Unsupported file type</div>;
+              // }
+              {isImageUrl(artwork.imageUrl) || isGoogleDriveLink(artwork.imageUrl) || isPdfUrl(artwork.imageUrl) ? (
+                <ArtworkImagePreview 
+                  url={artwork.imageUrl} 
+                  width={300} 
+                  height={400} 
+                  objectFit="contain" 
+                />
+              ) : (
+                <div className="text-red-500">Invalid artwork image</div>
+              )}
             })()}
           </div>
           {/* Right: Details & Voting */}

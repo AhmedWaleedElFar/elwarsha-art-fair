@@ -11,6 +11,11 @@ const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview')
   ssr: false,
 });
 
+// With this import
+const ArtworkImagePreview = dynamic(() => import('@/app/components/ArtworkImagePreview'), {
+  ssr: false,
+});
+
 const CATEGORIES = [
   "Photography",
   "Paintings",
@@ -26,8 +31,11 @@ function isPdfUrl(url) {
 }
 
 const ArtPreview = memo(function ArtPreview({ url, title, size = 64 }) {
+  // if (isGoogleDriveLink(url) || isPdfUrl(url)) {
+  //   return <PdfImagePreview url={url} width={size} height={size} />;
+  // }
   if (isGoogleDriveLink(url) || isPdfUrl(url)) {
-    return <PdfImagePreview url={url} width={size} height={size} />;
+    return <ArtworkImagePreview url={url} width={size} height={size} />;
   }
   return (
     <Image
@@ -268,7 +276,7 @@ export default function ManageArtworksPage() {
             </svg>
             Back to Dashboard
           </button>
-          <button
+          {/* <button
             onClick={() => {
               if (window.location.pathname !== '/') {
                 router.push('/');
@@ -280,7 +288,7 @@ export default function ManageArtworksPage() {
               <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
             </svg>
             Home
-          </button>
+          </button> */}
         </div>
         <div className="flex gap-4 mb-6">
           <button

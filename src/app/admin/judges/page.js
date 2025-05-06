@@ -192,7 +192,7 @@ export default function AdminJudgesPage() {
             </svg>
             Back to Dashboard
           </LoadingLink>
-          <LoadingLink 
+          {/* <LoadingLink 
             href="/" 
             onClick={(e) => {
               if (window.location.pathname === '/') {
@@ -204,7 +204,7 @@ export default function AdminJudgesPage() {
               <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
             </svg>
             Home
-          </LoadingLink>
+          </LoadingLink> */}
         </div>
         <form onSubmit={handleSubmit} className="mb-8 space-y-4 p-6 bg-[#1e1e1e] rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-gray-300">{editMode ? 'Edit Judge' : 'Create New Judge'}</h2>
