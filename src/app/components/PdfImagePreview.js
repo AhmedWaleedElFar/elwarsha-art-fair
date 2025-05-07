@@ -3,24 +3,40 @@
 import { memo, useEffect } from 'react';
 
 export default memo(function PdfImagePreview({ url, width = 190, height = 520, cachePreview }) {
+  useEffect(() => {
+    if (cachePreview) {
+      const preview = (
+        <PdfImagePreview url={url} width={width} height={height} />
+      );
+      cachePreview(url, preview);
+    }
+  }, [url, cachePreview, width, height]);
+
   // Extract Google Drive file ID from different link formats
   function getGoogleDriveFileId(link) {
     let match = link.match(/\/file\/d\/([^/]+)/);
-    if (match) return match[1];
-
-    match = link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    if (match) return match[1];
-
-    match = link.match(/https:\/\/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
-    if (match) return match[1];
-
-    return null;
+    if (!match) match = link.match(/\/uc\?id=([^&]+)/);
+    if (!match) match = link.match(/\/open\?id=([^&]+)/);
+    return match ? match[1] : null;
   }
 
   // Build proxied or direct preview URL
-  function getProxiedPdfUrl(link) {
-    const fileId = getGoogleDriveFileId(link);
-    return fileId ? `/api/proxy-pdf?fileId=${fileId}` : link;
+  function getProxiedPdfUrl(pdfUrl) {
+    if (!pdfUrl) return '';
+    
+    // Handle Google Drive links
+    if (pdfUrl.includes('drive.google.com')) {
+      const fileId = getGoogleDriveFileId(pdfUrl);
+      if (fileId) return `https://drive.google.com/uc?export=view&id=${fileId}`;
+      return pdfUrl;
+    }
+    
+    // Handle direct PDF links
+    if (pdfUrl.toLowerCase().endsWith('.pdf')) {
+      return `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+    }
+    
+    return pdfUrl;
   }
 
   if (!url) {
@@ -33,19 +49,10 @@ export default memo(function PdfImagePreview({ url, width = 190, height = 520, c
 
   const previewUrl = getProxiedPdfUrl(url);
 
-  useEffect(() => {
-    if (cachePreview) {
-      const preview = (
-        <PdfImagePreview url={url} width={width} height={height} />
-      );
-      cachePreview(url, preview);
-    }
-  }, [url, cachePreview, width, height]);
-
   return (
     <div
       className="relative flex items-center justify-center rounded-md shadow-md bg-zinc-800"
-      style={{ width, height, overflow: "hidden" }}
+      style={{ width: `${width}px`, height: `${height}px` }}
     >
       <iframe
         src={previewUrl}
@@ -130,4 +137,4 @@ export default memo(function PdfImagePreview({ url, width = 190, height = 520, c
       `}</style>
     </div>
   );
-})
+});
