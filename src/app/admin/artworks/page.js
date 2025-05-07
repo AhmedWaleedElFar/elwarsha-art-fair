@@ -179,14 +179,20 @@ export default function ManageArtworksPage() {
     } else {
       fetchArtworks();
     }
-  }, [session, status,router]);
+  }, [session, status, router]);
 
   async function fetchArtworks() {
     setLoading(true);
-    const res = await fetch("/api/artworks");
-    const data = await res.json();
-    setArtworks(data.artworks || []);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/artworks");
+      const data = await res.json();
+      setArtworks(data.artworks || []);
+    } catch (error) {
+      console.error("Failed to fetch artworks:", error);
+      setArtworks([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleAdd(e) {
@@ -268,7 +274,7 @@ export default function ManageArtworksPage() {
             </svg>
             Back to Dashboard
           </button>
-          <button
+          {/* <button
             onClick={() => {
               if (window.location.pathname !== '/') {
                 router.push('/');
@@ -280,7 +286,7 @@ export default function ManageArtworksPage() {
               <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
             </svg>
             Home
-          </button>
+          </button> */}
         </div>
         <div className="flex gap-4 mb-6">
           <button
