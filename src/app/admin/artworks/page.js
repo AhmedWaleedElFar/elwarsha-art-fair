@@ -26,12 +26,39 @@ function isPdfUrl(url) {
 }
 
 const ArtPreview = memo(function ArtPreview({ url, title, size = 64 }) {
-  if (isGoogleDriveLink(url) || isPdfUrl(url)) {
-    return <PdfImagePreview url={url} width={size} height={size} />;
+  const previewUrl = useMemo(() => {
+    if (!url) return null;
+    if (isGoogleDriveLink(url) || isPdfUrl(url)) {
+      return url;
+    }
+    return url;
+  }, [url]);
+
+  if (!previewUrl) {
+    return (
+      <div 
+        style={{
+          width: size,
+          height: size,
+          background: '#f9f9f9',
+          borderRadius: 8,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <span className="text-xs text-gray-500">No preview</span>
+      </div>
+    );
   }
+
+  if (isGoogleDriveLink(previewUrl) || isPdfUrl(previewUrl)) {
+    return <PdfImagePreview url={previewUrl} width={size} height={size} />;
+  }
+
   return (
     <Image
-      src={url}
+      src={previewUrl}
       alt={title}
       width={size}
       height={size}
@@ -40,6 +67,9 @@ const ArtPreview = memo(function ArtPreview({ url, title, size = 64 }) {
       loading="lazy"
     />
   );
+}, (prevProps, nextProps) => {
+  // Only re-render if url or size changes
+  return prevProps.url === nextProps.url && prevProps.size === nextProps.size;
 });
 
 const BulkCSVUpload = memo(function BulkCSVUpload({ fetchArtworks }) {
@@ -49,7 +79,19 @@ const BulkCSVUpload = memo(function BulkCSVUpload({ fetchArtworks }) {
   const [error, setError] = useState("");
 
   const handleFileChange = (e) => {
-    setCsvFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      // Ensure the file is read with UTF-8 encoding
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target.result;
+        // Create a new Blob with explicit UTF-8 type
+        const blob = new Blob([text], { type: 'text/csv;charset=UTF-8' });
+        const newFile = new File([blob], file.name, { type: 'text/csv;charset=UTF-8' });
+        setCsvFile(newFile);
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
     setResults(null);
     setError("");
   };
@@ -67,11 +109,33 @@ const BulkCSVUpload = memo(function BulkCSVUpload({ fetchArtworks }) {
         body: formData,
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Bulk upload failed");
-      setResults(data.results);
+      if (!res.ok) {
+        throw new Error(
+          data.error || 
+          data.message || 
+          `Upload failed with status ${res.status}`
+        );
+      }
+      // Ensure each result has at least an empty message field
+      const processedResults = data.results?.map(r => ({
+        ...r,
+        message: r.message || 
+          (r.success ? "" : 
+            `Validation failed for artwork ${r.artworkCode || ''}` + 
+            (r.title ? ` (${r.title})` : '')
+          )
+      })) || [];
+      setResults(processedResults);
       if (fetchArtworks) fetchArtworks();
     } catch (err) {
       setError(err.message);
+      // Create a results object to show in the table
+      setResults([{
+        success: false,
+        message: err.message,
+        title: "Upload failed",
+        artworkCode: ""
+      }]);
     } finally {
       setUploading(false);
     }
@@ -115,6 +179,7 @@ const BulkCSVUpload = memo(function BulkCSVUpload({ fetchArtworks }) {
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Artwork Code</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Title</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Status</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Details</th>
                 </tr>
               </thead>
               <tbody>
@@ -122,7 +187,13 @@ const BulkCSVUpload = memo(function BulkCSVUpload({ fetchArtworks }) {
                   <tr key={i} className="border-t border-gray-600">
                     <td className="px-4 py-2 text-sm text-gray-300">{r.artworkCode}</td>
                     <td className="px-4 py-2 text-sm text-gray-300">{r.title}</td>
-                    <td className="px-4 py-2 text-sm">{r.success ? <span className="text-green-400">✅ Success</span> : <span className="text-[#ff6b6b]">❌ Failed</span>}</td>
+                    <td className="px-4 py-2 text-sm">
+                      {r.success ? 
+                        <span className="text-green-400">✅ Success</span> : 
+                        <span className="text-[#ff6b6b]">❌ Failed</span>
+                      }
+                    </td>
+                    <td className="px-4 py-2 text-sm text-gray-300">{r.message || ''}</td>
                   </tr>
                 ))}
               </tbody>

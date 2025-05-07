@@ -1,28 +1,41 @@
 "use client";
 
+import { useMemo } from 'react';
+
 export default function PdfImagePreview({ url, width = 300, height = 400 }) {
   // Google Drive proxy logic to handle PDF URL
-  function getGoogleDriveFileId(url) {
-    let match = url.match(/\/file\/d\/([^/]+)/);
-    if (match) return match[1];
-    match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    if (match) return match[1];
-    return null;
-  }
-  function getProxiedPdfUrl(url) {
-    const fileId = getGoogleDriveFileId(url);
-    if (fileId) {
-      return `/api/proxy-pdf?fileId=${fileId}`;
-    }
-    return url;
-  }
+  const getGoogleDriveFileId = useMemo(() => {
+    return (url) => {
+      let match = url.match(/\/file\/d\/([^/]+)/);
+      if (match) return match[1];
+      match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (match) return match[1];
+      return null;
+    };
+  }, []);
+
+  const getProxiedPdfUrl = useMemo(() => {
+    return (url) => {
+      const fileId = getGoogleDriveFileId(url);
+      if (fileId) {
+        return `/api/proxy-pdf?fileId=${fileId}`;
+      }
+      return url;
+    };
+  }, [getGoogleDriveFileId]);
+
+  const pdfUrl = useMemo(() => {
+    return getProxiedPdfUrl(url);
+  }, [url, getProxiedPdfUrl]);
+
   if (!url) {
     return <div className="text-red-500 text-xs">No PDF URL provided</div>;
   }
+
   // Standard preview size
   const frameWidth = 160;
   const frameHeight = 220;
-  const pdfUrl = getProxiedPdfUrl(url);
+
   return (
     <div
       style={{
@@ -39,6 +52,7 @@ export default function PdfImagePreview({ url, width = 300, height = 400 }) {
       }}
     >
       <iframe
+        key={pdfUrl} // Add key to force remount only when URL changes
         src={pdfUrl}
         width={frameWidth}
         height={frameHeight}
