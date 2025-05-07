@@ -7,7 +7,9 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import LoadingButton from "@/app/components/ui/LoadingButton";
 
-const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview'), { ssr: false });
+const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview'), {
+  ssr: false,
+});
 
 const CATEGORIES = [
   "Photography",
@@ -177,7 +179,7 @@ export default function ManageArtworksPage() {
     } else {
       fetchArtworks();
     }
-  }, [session, status]);
+  }, [session, status,router]);
 
   async function fetchArtworks() {
     setLoading(true);

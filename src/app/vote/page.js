@@ -7,6 +7,8 @@ import toast from 'react-hot-toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import VoteModal from '../components/vote/VoteModal';
 import LoadingLink from '@/app/components/ui/LoadingLink';
+import dynamic from 'next/dynamic';
+import Image from 'next/image';
 
 function isGoogleDriveLink(url) {
   return url?.includes('drive.google.com');
@@ -28,10 +30,10 @@ function isPdfUrl(url) {
   return url?.toLowerCase().endsWith('.pdf');
 }
 
-import dynamic from 'next/dynamic';
-const PdfImagePreview = dynamic(() => import('../components/PdfImagePreview'), { ssr: false });
+const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview'), {
+  ssr: false,
+});
 
-import Image from 'next/image';
 const ArtPreview = memo(function ArtPreview({ url, title, size = 192 }) {
   const [imageError, setImageError] = useState(false);
 
@@ -183,8 +185,8 @@ export default function VotePage() {
         <h1 className="text-3xl font-bold mb-4 text-center text-white">Welcome, {session?.user?.name || session?.user?.firstName || session?.user?.username}</h1>
         <h2 className="text-xl text-center text-gray-300 mb-8">Vote on Artworks</h2>
         
-        <div className="flex items-center justify-between mb-6">
-          <LoadingLink 
+        <div className="flex justify-end items-center mb-6">
+          {/* <LoadingLink 
             href="/" 
             onClick={(e) => {
               if (window.location.pathname === '/') {
@@ -196,7 +198,7 @@ export default function VotePage() {
               <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
             </svg>
             Home
-          </LoadingLink>
+          </LoadingLink> */}
           <LoadingLink 
             href="/judge-votes" 
             onClick={(e) => {
