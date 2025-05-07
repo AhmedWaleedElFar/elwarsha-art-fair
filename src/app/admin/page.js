@@ -175,8 +175,8 @@ export default function AdminPage() {
                         <li key={a._id} className={`flex flex-col rounded-md ${rowClass} p-3 mb-2`}>
                           <span className="font-medium text-white">{a.title}</span>
                           <span className="text-xs text-gray-400 mt-1">
-                            {a.artistName} | Avg: {a.totalVotes ? (typeof a.totalScore === 'number' ? (a.totalScore / a.totalVotes).toFixed(2) : 'N/A') : 'N/A'} | Votes: {a.totalVotes} | 
-                            <span className="font-bold text-[#93233B] ml-1">Total: {typeof a.totalScore === 'number' && !isNaN(a.totalScore) ? a.totalScore : 0}</span>
+                            {a.artistName} | Votes: {a.totalVotes} | 
+                            <span className="font-bold text-[#93233B] ml-1">Total Score: {typeof a.totalScore === 'number' && !isNaN(a.totalScore) ? a.totalScore : 0}</span>
                           </span>
                         </li>
                       );

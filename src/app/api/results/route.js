@@ -57,12 +57,12 @@ artworkStats.forEach(a => {
   a.avgScore = (a.totalVotes && typeof a.totalScore === 'number') ? (a.totalScore / a.totalVotes) : 0;
 });
 
-// Top 10 artworks by avg score per category
+// Top 10 artworks by total score per category
 const topArtworksByCategory = {};
 for (const category of ['Photography', 'Paintings', 'Digital Painting', 'Drawing']) {
   topArtworksByCategory[category] = artworkStats
     .filter(a => a.category === category)
-    .sort((a, b) => b.avgScore - a.avgScore)
+    .sort((a, b) => b.totalScore - a.totalScore)
     .slice(0, 10);
 }
 
