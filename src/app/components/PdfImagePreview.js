@@ -62,37 +62,7 @@ export default memo(function PdfImagePreview({ url, width = 190, height = 520, c
         aria-label="PDF preview"
         title="PDF preview"
         tabIndex={-1}
-        style={{
-          border: "none",
-          borderRadius: 8,
-          overflow: "hidden",
-          background: "#2a2a2a",
-          position: "relative"
-        }}
-        scrolling="no"
-      >
-        <div style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center"
-        }}>
-          <div style={{
-            transform: "scale(1)",
-            transformOrigin: "center",
-            maxWidth: "100%",
-            maxHeight: "100%"
-          }}>
-            {/* The PDF content will be centered here */}
-          </div>
-        </div>
-      </iframe>
-
-      {/* Overlay div to cover scrollbar area */}
+      />
       <div
         style={{
           position: 'absolute',
@@ -124,9 +94,6 @@ export default memo(function PdfImagePreview({ url, width = 190, height = 520, c
 
         iframe {
           overflow: hidden !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
         }
 
         iframe::-webkit-scrollbar {
