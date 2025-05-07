@@ -1,69 +1,140 @@
 "use client";
 
-export default function PdfImagePreview({ url, width = 300, height = 400 }) {
-  // Google Drive proxy logic to handle PDF URL
-  function getGoogleDriveFileId(url) {
-    let match = url.match(/\/file\/d\/([^/]+)/);
-    if (match) return match[1];
-    match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-    if (match) return match[1];
-    return null;
-  }
-  function getProxiedPdfUrl(url) {
-    const fileId = getGoogleDriveFileId(url);
-    if (fileId) {
-      return `/api/proxy-pdf?fileId=${fileId}`;
+import { memo, useEffect } from 'react';
+
+export default memo(function PdfImagePreview({ url, width = 190, height = 520, cachePreview }) {
+  useEffect(() => {
+    if (cachePreview) {
+      const preview = (
+        <PdfImagePreview url={url} width={width} height={height} />
+      );
+      cachePreview(url, preview);
     }
-    return url;
+  }, [url, cachePreview, width, height]);
+
+  // Extract Google Drive file ID from different link formats
+  function getGoogleDriveFileId(link) {
+    let match = link.match(/\/file\/d\/([^/]+)/);
+    if (!match) match = link.match(/\/uc\?id=([^&]+)/);
+    if (!match) match = link.match(/\/open\?id=([^&]+)/);
+    return match ? match[1] : null;
   }
+
+  // Build proxied or direct preview URL
+  function getProxiedPdfUrl(pdfUrl) {
+    if (!pdfUrl) return '';
+    
+    // Handle Google Drive links
+    if (pdfUrl.includes('drive.google.com')) {
+      const fileId = getGoogleDriveFileId(pdfUrl);
+      if (fileId) return `https://drive.google.com/uc?export=view&id=${fileId}`;
+      return pdfUrl;
+    }
+    
+    // Handle direct PDF links
+    if (pdfUrl.toLowerCase().endsWith('.pdf')) {
+      return `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+    }
+    
+    return pdfUrl;
+  }
+
   if (!url) {
-    return <div className="text-red-500 text-xs">No PDF URL provided</div>;
+    return (
+      <div className="text-red-500 text-xs font-mono">
+        No PDF URL provided
+      </div>
+    );
   }
-  // Standard preview size
-  const frameWidth = 160;
-  const frameHeight = 220;
-  const pdfUrl = getProxiedPdfUrl(url);
+
+  const previewUrl = getProxiedPdfUrl(url);
+
   return (
     <div
-      style={{
-        width: frameWidth,
-        height: frameHeight,
-        overflow: 'hidden',
-        borderRadius: 8,
-        background: '#2a2a2a',
-        position: 'relative',
-        boxShadow: '0 2px 8px 0 rgba(0,0,0,0.07)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+      className="relative flex items-center justify-center rounded-md shadow-md bg-zinc-800"
+      style={{ width: `${width}px`, height: `${height}px` }}
     >
       <iframe
-        src={pdfUrl}
-        width={frameWidth}
-        height={frameHeight}
-        style={{
-          border: 0,
-          borderRadius: 8,
-          background: '#2a2a2a',
-          width: frameWidth,
-          height: frameHeight,
-          overflow: 'hidden',
-          pointerEvents: 'none', // Prevents interaction/scroll
-          transform: 'scale(0.9)', // Downscale content to fit nicely
-          transformOrigin: 'top left',
-          display: 'block',
-        }}
-        aria-label="PDF preview"
+        src={previewUrl}
+        width={width}
+        height={height}
         loading="lazy"
+        aria-label="PDF preview"
         title="PDF preview"
         tabIndex={-1}
+        style={{
+          border: "none",
+          borderRadius: 8,
+          overflow: "hidden",
+          background: "#2a2a2a",
+          position: "relative"
+        }}
+        scrolling="no"
+      >
+        <div style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <div style={{
+            transform: "scale(1)",
+            transformOrigin: "center",
+            maxWidth: "100%",
+            maxHeight: "100%"
+          }}>
+            {/* The PDF content will be centered here */}
+          </div>
+        </div>
+      </iframe>
+
+      {/* Overlay div to cover scrollbar area */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: '20px', // Approximate scrollbar width
+          height: '100%',
+          zIndex: 10,
+          background: '#27272a', // bg-zinc-800 Tailwind color (#27272a)
+          borderTopRightRadius: '8px',
+          borderBottomRightRadius: '8px',
+        }}
       />
-      {/* Hide scrollbars in iframe (for most browsers) */}
-      <style>{`
-        iframe::-webkit-scrollbar { display: none !important; }
-        iframe { scrollbar-width: none !important; }
+
+      {/* Global styles to hide scrollbars across browsers */}
+      <style jsx global>{`
+        /* Hide scrollbars for Chrome, Safari and Opera */
+        *::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+
+        /* Hide scrollbars for IE, Edge and Firefox */
+        * {
+          -ms-overflow-style: none !important;  /* IE and Edge */
+          scrollbar-width: none !important;     /* Firefox */
+        }
+
+        iframe {
+          overflow: hidden !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+
+        iframe::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
       `}</style>
     </div>
   );
-}
+});

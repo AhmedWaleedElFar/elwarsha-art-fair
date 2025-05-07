@@ -9,11 +9,7 @@ const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview')
   ssr: false,
 });
 
-const ArtworkImagePreview = dynamic(() => import('@/app/components/ArtworkImagePreview'), {
-  ssr: false,
-});
-
-export default function VoteModal({ artwork, open, onClose, onSubmit, previousVote }) {
+export default function VoteModal({ artwork, open, onClose, onSubmit, previousVote, cachedPreview }) {
   const [scores, setScores] = useState(previousVote ? previousVote.scores : {
     techniqueExecution: 5,
     creativityOriginality: 5,
@@ -79,50 +75,38 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
     }
   }
 
+  const url = artwork?.imageUrl;
+
+  function isGoogleDriveLink(url) {
+    return url && url.includes('drive.google.com');
+  }
+  function isPdfUrl(url) {
+    return url && url.toLowerCase().endsWith('.pdf');
+  }
+  function isImageUrl(url) {
+    return /\.(jpe?g|png|gif|webp)$/i.test(url) || url?.startsWith('https://picsum.photos/');
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 overflow-auto p-2" role="dialog" aria-modal="true">
       <div className="bg-[#1e1e1e] rounded-lg shadow-lg max-w-lg w-full p-4 sm:p-8 relative text-white">
-        {/* <button
-          className="absolute top-2 right-2 text-gray-400 hover:text-white transition-colors text-2xl w-10 h-10 flex items-center justify-center focus:outline-none"
-          onClick={onClose}
-          aria-label="Close"
-          tabIndex={0}
-        >
-          ×
-        </button> */}
         <div className="flex flex-col md:flex-row gap-6 overflow-y-auto max-h-[70vh] pb-4">
 
           {/* Left: Artwork Preview (PDF, Google Drive, or Image) */}
           <div className="flex-shrink-0 w-full md:w-1/2 flex items-center justify-center">
-            {(() => {
-              function isGoogleDriveLink(url) {
-                return url && url.includes('drive.google.com');
-              }
-              function isPdfUrl(url) {
-                return url && url.toLowerCase().endsWith('.pdf');
-              }
-              function isImageUrl(url) {
-                return /\.(jpe?g|png|gif|webp)$/i.test(url) || url?.startsWith('https://picsum.photos/');
-              }
-              const url = artwork.imageUrl;
-              // if (isGoogleDriveLink(url) || isPdfUrl(url)) {
-              //   return <PdfImagePreview url={url} width={288} height={288} />;
-              // } else if (isImageUrl(url)) {
-              //   return <img src={url} alt={artwork.title} className="rounded max-h-72 object-contain w-full bg-[#2a2a2a] p-2" />;
-              // } else {
-              //   return <div className="w-full h-48 flex items-center justify-center bg-[#2a2a2a] rounded text-gray-400">Unsupported file type</div>;
-              // }
-              {isImageUrl(artwork.imageUrl) || isGoogleDriveLink(artwork.imageUrl) || isPdfUrl(artwork.imageUrl) ? (
-                <ArtworkImagePreview 
-                  url={artwork.imageUrl} 
-                  width={300} 
-                  height={400} 
-                  objectFit="contain" 
-                />
+            <div className="w-[288px] h-[380px] mx-auto flex items-center justify-center">
+              {cachedPreview ? (
+                <div className="flex justify-center" dangerouslySetInnerHTML={{__html: cachedPreview}} />
               ) : (
-                <div className="text-red-500">Invalid artwork image</div>
+                <div className="flex justify-center">
+                  {(isGoogleDriveLink(url) || isPdfUrl(url)) ? (
+                    <PdfImagePreview url={url} width={190} height={320} />
+                  ) : (
+                    <img src={url} alt={artwork.title} className="rounded max-h-72 object-contain w-full bg-[#2a2a2a] p-2" />
+                  )}
+                </div>
               )}
-            })()}
+            </div>
           </div>
           {/* Right: Details & Voting */}
           <div className="w-full md:w-1/2">

@@ -2,13 +2,14 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, memo } from 'react';
+import { useEffect, useState, memo, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import VoteModal from '../components/vote/VoteModal';
 import LoadingLink from '@/app/components/ui/LoadingLink';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import ReactDOMServer from 'react-dom/server';
 
 function isGoogleDriveLink(url) {
   return url?.includes('drive.google.com');
@@ -34,29 +35,17 @@ const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview')
   ssr: false,
 });
 
-const ArtPreview = memo(function ArtPreview({ url, title, size = 192 }) {
-  if (isGoogleDriveLink(url)) {
-    const fileId = getGoogleDriveFileId(url);
-    // Guess type by extension in url or fallback to PDF if not image
-    if (isImageUrl(url) && fileId) {
-      const directImgUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-      return (
-        <Image
-          src={directImgUrl}
-          alt={title}
-          width={size}
-          height={size}
-          style={{ objectFit: 'contain', borderRadius: 8, background: '#2a2a2a' }}
-          className="object-cover rounded mb-4"
-          loading="lazy"
-        />
-      );
-    } else if ((isPdfUrl(url) || fileId)) {
-      // Use PdfImagePreview for Google Drive PDFs
-      return <PdfImagePreview url={url} width={size} height={size} />;
-    }
+const ArtPreview = memo(function ArtPreview({ url, title, size = 192, cachePreview }) {
+  if (isGoogleDriveLink(url) || isPdfUrl(url)) {
+    return (
+      <PdfImagePreview 
+        url={url} 
+        width={size} 
+        height={size} 
+        cachePreview={cachePreview}
+      />
+    );
   }
-  // Non-Google Drive images or PDFs
   if (isImageUrl(url)) {
     return (
       <Image
@@ -69,8 +58,6 @@ const ArtPreview = memo(function ArtPreview({ url, title, size = 192 }) {
         loading="lazy"
       />
     );
-  } else if (isPdfUrl(url)) {
-    return <PdfImagePreview url={url} width={size} height={size} />;
   }
   // fallback: unsupported type
   return <div className="w-full h-48 flex items-center justify-center bg-[#2a2a2a] rounded mb-4 text-gray-400">Unsupported file type</div>;
@@ -85,9 +72,15 @@ export default function VotePage() {
   const [selectedArtwork, setSelectedArtwork] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [previewCache, setPreviewCache] = useState({});
 
   const [selectedCategory, setSelectedCategory] = useState('');
   const [codeSearch, setCodeSearch] = useState('');
+
+  const cachePreview = useCallback((url, element) => {
+    const previewHtml = ReactDOMServer.renderToStaticMarkup(element);
+    setPreviewCache(prev => ({...prev, [url]: previewHtml}));
+  }, []);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -235,7 +228,7 @@ export default function VotePage() {
               .map(artwork => (
               <div key={artwork._id} className="bg-[#1e1e1e] rounded-lg shadow-lg p-4 flex flex-col items-center">
                 <div className="bg-[#2a2a2a] p-2 rounded mb-4 flex items-center justify-center">
-                  <ArtPreview url={artwork.imageUrl} title={artwork.title} />
+                  <ArtPreview url={artwork.imageUrl} title={artwork.title} cachePreview={cachePreview} />
                 </div>
                 <h2 className="text-lg font-bold mt-2 mb-1 text-center">{artwork.title}</h2>
                 <div className="text-gray-300 text-sm mb-1">By {artwork.artistName}</div>
@@ -269,7 +262,6 @@ export default function VotePage() {
       <VoteModal
         artwork={selectedArtwork}
         open={modalOpen}
-        previousVote={selectedArtwork && votes.find(v => v.artworkId === selectedArtwork._id)}
         onClose={() => setModalOpen(false)}
         onSubmit={async (voteData) => {
           if (!selectedArtwork) return;
@@ -302,6 +294,8 @@ export default function VotePage() {
             toast.error(err.message);
           }
         }}
+        previousVote={selectedArtwork && votes.find(v => v.artworkId === selectedArtwork._id)}
+        cachedPreview={selectedArtwork ? previewCache[selectedArtwork.imageUrl] : null}
       />
       {/* Confirmation Modal for Vote Deletion */}
       <ConfirmationModal 
