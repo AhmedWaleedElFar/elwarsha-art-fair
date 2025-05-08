@@ -7,10 +7,6 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import LoadingButton from "@/app/components/ui/LoadingButton";
 
-const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview'), {
-  ssr: false,
-});
-
 const CATEGORIES = [
   "Photography",
   "Paintings",
@@ -18,57 +14,43 @@ const CATEGORIES = [
   "Drawing",
 ];
 
-function isGoogleDriveLink(url) {
-  return /drive\.google\.com\/file\/d\//.test(url) || /drive\.google\.com\/open\?id=/.test(url);
-}
-function isPdfUrl(url) {
-  return url?.toLowerCase().endsWith('.pdf');
+function isImageUrl(url) {
+  return /\.(jpe?g|png|gif|webp)$/i.test(url);
 }
 
 const ArtPreview = memo(function ArtPreview({ url, title, size = 64 }) {
-  const previewUrl = useMemo(() => {
-    if (!url) return null;
-    if (isGoogleDriveLink(url) || isPdfUrl(url)) {
-      return url;
-    }
-    return url;
-  }, [url]);
-
-  if (!previewUrl) {
+  if (!url || !isImageUrl(url)) {
     return (
       <div 
         style={{
           width: size,
           height: size,
-          background: '#f9f9f9',
+          background: '#2a2a2a',
           borderRadius: 8,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
         }}
       >
-        <span className="text-xs text-gray-500">No preview</span>
+        <span className="text-xs text-gray-400">No image</span>
       </div>
     );
   }
 
-  if (isGoogleDriveLink(previewUrl) || isPdfUrl(previewUrl)) {
-    return <PdfImagePreview url={previewUrl} width={size} height={size} />;
-  }
-
   return (
-    <Image
-      src={previewUrl}
-      alt={title}
-      width={size}
-      height={size}
-      style={{ objectFit: "cover", borderRadius: 8, background: "#f9f9f9" }}
-      className="object-cover rounded"
-      loading="lazy"
-    />
+    <div style={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#2a2a2a', borderRadius: 8 }}>
+      <Image
+        src={url}
+        alt={title}
+        width={size}
+        height={size}
+        style={{ objectFit: 'contain', maxWidth: '100%', maxHeight: '100%' }}
+        className="rounded"
+        loading="lazy"
+      />
+    </div>
   );
 }, (prevProps, nextProps) => {
-  // Only re-render if url or size changes
   return prevProps.url === nextProps.url && prevProps.size === nextProps.size;
 });
 
@@ -81,11 +63,9 @@ const BulkCSVUpload = memo(function BulkCSVUpload({ fetchArtworks }) {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Ensure the file is read with UTF-8 encoding
       const reader = new FileReader();
       reader.onload = (e) => {
         const text = e.target.result;
-        // Create a new Blob with explicit UTF-8 type
         const blob = new Blob([text], { type: 'text/csv;charset=UTF-8' });
         const newFile = new File([blob], file.name, { type: 'text/csv;charset=UTF-8' });
         setCsvFile(newFile);
@@ -116,7 +96,6 @@ const BulkCSVUpload = memo(function BulkCSVUpload({ fetchArtworks }) {
           `Upload failed with status ${res.status}`
         );
       }
-      // Ensure each result has at least an empty message field
       const processedResults = data.results?.map(r => ({
         ...r,
         message: r.message || 
@@ -129,7 +108,6 @@ const BulkCSVUpload = memo(function BulkCSVUpload({ fetchArtworks }) {
       if (fetchArtworks) fetchArtworks();
     } catch (err) {
       setError(err.message);
-      // Create a results object to show in the table
       setResults([{
         success: false,
         message: err.message,

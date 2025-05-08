@@ -10,70 +10,28 @@ import LoadingLink from '@/app/components/ui/LoadingLink';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
-function isGoogleDriveLink(url) {
-  return url?.includes('drive.google.com');
-}
-
-function getGoogleDriveFileId(url) {
-  let match = url.match(/\/file\/d\/([^/]+)/);
-  if (match) return match[1];
-  match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (match) return match[1];
-  return null;
-}
-
 function isImageUrl(url) {
-  return /\.(jpe?g|png|gif|webp)$/i.test(url) || url?.startsWith('https://picsum.photos/');
+  return /\.(jpe?g|png|gif|webp)$/i.test(url);
 }
-
-function isPdfUrl(url) {
-  return url?.toLowerCase().endsWith('.pdf');
-}
-
-const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview'), {
-  ssr: false,
-});
 
 const ArtPreview = memo(function ArtPreview({ url, title, size = 192 }) {
-  if (isGoogleDriveLink(url)) {
-    const fileId = getGoogleDriveFileId(url);
-    // Guess type by extension in url or fallback to PDF if not image
-    if (isImageUrl(url) && fileId) {
-      const directImgUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-      return (
-        <Image
-          src={directImgUrl}
-          alt={title}
-          width={size}
-          height={size}
-          style={{ objectFit: 'contain', borderRadius: 8, background: '#2a2a2a' }}
-          className="object-cover rounded mb-4"
-          loading="lazy"
-        />
-      );
-    } else if ((isPdfUrl(url) || fileId)) {
-      // Use PdfImagePreview for Google Drive PDFs
-      return <PdfImagePreview url={url} width={size} height={size} />;
-    }
+  if (!url || !isImageUrl(url)) {
+    return <div className="w-full h-48 flex items-center justify-center bg-[#2a2a2a] rounded mb-4 text-gray-400">No image available</div>;
   }
-  // Non-Google Drive images or PDFs
-  if (isImageUrl(url)) {
-    return (
+
+  return (
+    <div className="w-full h-48 flex items-center justify-center bg-[#2a2a2a] rounded mb-4 overflow-hidden">
       <Image
         src={url}
         alt={title}
         width={size}
         height={size}
-        style={{ objectFit: 'contain', borderRadius: 8, background: '#2a2a2a' }}
-        className="object-cover rounded mb-4"
+        style={{ objectFit: 'contain', maxWidth: '100%', maxHeight: '100%' }}
+        className="rounded"
         loading="lazy"
       />
-    );
-  } else if (isPdfUrl(url)) {
-    return <PdfImagePreview url={url} width={size} height={size} />;
-  }
-  // fallback: unsupported type
-  return <div className="w-full h-48 flex items-center justify-center bg-[#2a2a2a] rounded mb-4 text-gray-400">Unsupported file type</div>;
+    </div>
+  );
 });
 
 export default function VotePage() {
