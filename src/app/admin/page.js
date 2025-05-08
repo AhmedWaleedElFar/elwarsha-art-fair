@@ -130,7 +130,7 @@ export default function AdminPage() {
     <div className="min-h-screen bg-black text-white px-4 py-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between mb-6">
-          <button
+          {/* <button
             onClick={() => router.push('/')}
             className="text-gray-300 hover:text-[#93233B] transition-colors font-medium px-3 py-2 rounded-md hover:bg-[#2a2a2a] flex items-center"
           >
@@ -138,7 +138,7 @@ export default function AdminPage() {
               <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
             </svg>
             Home
-          </button>
+          </button> */}
           <div className="flex gap-4">
             <button
               onClick={() => router.push('/admin/artworks')}

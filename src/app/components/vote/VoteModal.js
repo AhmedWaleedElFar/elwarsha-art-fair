@@ -2,11 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import styles from './VoteModal.module.css';
-import dynamic from 'next/dynamic';
 import LoadingButton from '@/app/components/ui/LoadingButton';
-const PdfImagePreview = dynamic(() => import('@/app/components/PdfImagePreview'), {
-  ssr: false,
-});
 
 export default function VoteModal({ artwork, open, onClose, onSubmit, previousVote }) {
   const [scores, setScores] = useState(previousVote ? previousVote.scores : {
@@ -85,39 +81,15 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
         >
           ×
         </button> */}
-        <div className="flex flex-col md:flex-row gap-6 overflow-y-auto max-h-[70vh] pb-4">
+        <div className="w-full max-w-md mx-auto">
+            <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-white mb-2">{artwork.title}</h2>
+                <p className="text-gray-300 mb-1"><span className="font-semibold text-white">Artist:</span> {artwork.artistName}</p>
+                <p className="text-gray-300 mb-1"><span className="font-semibold text-white">Medium:</span> <span className="text-[#93233B]">{artwork.category}</span></p>
+                <p className="text-gray-300 mb-3"><span className="font-semibold text-white">Code:</span> {artwork.artworkCode}</p>
+            </div>
 
-          {/* Left: Artwork Preview (PDF, Google Drive, or Image) */}
-          <div className="flex-shrink-0 w-full md:w-1/2 flex items-center justify-center">
-            {(() => {
-              function isGoogleDriveLink(url) {
-                return url && url.includes('drive.google.com');
-              }
-              function isPdfUrl(url) {
-                return url && url.toLowerCase().endsWith('.pdf');
-              }
-              function isImageUrl(url) {
-                return /\.(jpe?g|png|gif|webp)$/i.test(url) || url?.startsWith('https://picsum.photos/');
-              }
-              const url = artwork.imageUrl;
-              if (isGoogleDriveLink(url) || isPdfUrl(url)) {
-                return <PdfImagePreview url={url} width={288} height={288} />;
-              } else if (isImageUrl(url)) {
-                return <img src={url} alt={artwork.title} className="rounded max-h-72 object-contain w-full bg-[#2a2a2a] p-2" />;
-              } else {
-                return <div className="w-full h-48 flex items-center justify-center bg-[#2a2a2a] rounded text-gray-400">Unsupported file type</div>;
-              }
-            })()}
-          </div>
-          {/* Right: Details & Voting */}
-          <div className="w-full md:w-1/2">
-            <h2 className="text-xl font-bold mb-2 text-white">{artwork.title}</h2>
-            <p className="text-gray-300 mb-1"><span className="font-semibold text-white">Artist:</span> {artwork.artistName}</p>
-            <p className="text-gray-300 mb-1"><span className="font-semibold text-white">Medium:</span> <span className="text-[#93233B]">{artwork.category}</span></p>
-            <p className="text-gray-300 mb-1"><span className="font-semibold text-white">Code:</span> {artwork.artworkCode}</p>
-            <p className="text-gray-300 mb-3"><span className="font-semibold text-white">Description:</span> {artwork.description}</p>
-
-            <form onSubmit={handleSubmit} className="space-y-3 mt-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="font-semibold text-white">Technique & Execution</label>
                 <input type="range" name="techniqueExecution" min="0" max="10" value={scores.techniqueExecution} onChange={handleChange} className={`w-full ${styles.customRange}`} />
@@ -149,25 +121,27 @@ export default function VoteModal({ artwork, open, onClose, onSubmit, previousVo
                 />
               </div>
               {error && <div className="text-[#ff6b6b] text-sm">{error}</div>}
-              <LoadingButton
-                type="submit"
-                isLoading={submitting}
-                className="w-full bg-[#93233B] hover:bg-[#7a1d31] text-white font-semibold py-2 rounded-md disabled:opacity-60 transition-colors"
-              >
-                Submit Vote
-              </LoadingButton>
+              <div className="flex justify-center gap-6 w-full">
+                <LoadingButton
+                  type="submit"
+                  isLoading={submitting}
+                  className="w-40 bg-[#93233B] hover:bg-[#7a1d31] text-white font-semibold py-3 px-4 rounded-md disabled:opacity-60 transition-colors"
+                >
+                  Submit Vote
+                </LoadingButton>
+                {/* Close Vote button for mobile accessibility */}
+                <button
+                  className="w-40 rounded-md bg-gray-600 hover:bg-gray-500 text-white font-semibold py-3 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-[#93233B]"
+                  onClick={onClose}
+                  aria-label="Close Vote Modal"
+                >
+                  Close Vote
+                </button>
+              </div>
             </form>
           </div>
         </div>
-        {/* Close Vote button for mobile accessibility */}
-        <button
-          className="mt-4 w-full rounded-md bg-[#93233B] px-4 py-3 text-base font-semibold text-white hover:bg-[#7a1d31] transition-colors focus:outline-none focus:ring-2 focus:ring-[#93233B]"
-          onClick={onClose}
-          aria-label="Close Vote Modal"
-        >
-          Close Vote
-        </button>
+        
       </div>
-    </div>
   );
 }
